@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Where We Dropping?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #1a0033 0%, #000000 100%);
+            --accent-purple: #8A2BE2; /* Amethyst */
+            --accent-blue: #00BFFF; /* Deep Sky Blue */
+            --text-gold: #FFD700; /* Gold */
+            --text-light: #E0FFFF; /* Light Cyan */
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(138, 43, 226, 0.4);
+            --selected-border: #00BFFF;
+            --button-bg: #8A2BE2;
+            --button-shadow: #6A1AAB;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--primary-bg);
+            font-family: 'Bebas Neue', sans-serif;
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Glitch effect for heading */
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            color: var(--text-gold);
+            margin-bottom: 40px;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            position: relative;
+            animation: pulse 2s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.6); transform: scale(1); }
+            100% { text-shadow: 0 0 25px rgba(255, 215, 0, 0.9), 0 0 50px rgba(255, 215, 0, 0.3); transform: scale(1.02); }
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 0 40px rgba(138, 43, 226, 0.4);
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .location-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 10px;
+            padding: 20px 10px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease-in-out;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .location-card:hover {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.6);
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .location-card.selected {
+            border-color: var(--selected-border);
+            background: rgba(0, 191, 255, 0.2);
+            box-shadow: 0 0 25px rgba(0, 191, 255, 0.8), 0 0 50px rgba(0, 191, 255, 0.3);
+            transform: scale(1.05);
+            animation: glow var(--transition-speed) forwards;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 10px rgba(0, 191, 255, 0.4); }
+            to { box-shadow: 0 0 25px rgba(0, 191, 255, 0.8), 0 0 50px rgba(0, 191, 255, 0.3); }
+        }
+
+        button {
+            background-color: var(--button-bg);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease-in-out;
+            box-shadow: 0 8px 0 var(--button-shadow);
+            margin-top: 20px;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background-color: var(--accent-blue);
+            box-shadow: 0 8px 0 #008DCC;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 var(--button-shadow);
+        }
+
+        .sub-text {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.2);
+        }
+
+        /* Background animation - subtle glowing particles */
+        .background-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(138, 43, 226, 0.5);
+            border-radius: 50%;
+            opacity: 0;
+            animation: moveParticle 15s infinite linear;
+        }
+        .particle:nth-child(2n) { background: rgba(0, 191, 255, 0.5); animation-duration: 20s; animation-delay: -5s;}
+        .particle:nth-child(3n) { background: rgba(255, 215, 0, 0.4); animation-duration: 10s; animation-delay: -10s;}
+        @keyframes moveParticle {
+            0% { transform: translate(var(--x1), var(--y1)) scale(0); opacity: 0; }
+            10% { opacity: 1; transform: translate(var(--x2), var(--y2)) scale(1); }
+            90% { opacity: 1; transform: translate(var(--x3), var(--y3)) scale(1.2); }
+            100% { transform: translate(var(--x4), var(--y4)) scale(0); opacity: 0; }
+        }
+
+        /* Formspree message styling */
+        .form-message {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: var(--text-gold);
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem;
+                margin-bottom: 25px;
+            }
+            .container {
+                padding: 20px;
+            }
+            .location-grid {
+                grid-template-columns: 1fr; /* Single column on small screens */
+            }
+            .location-card {
+                font-size: 1rem;
+                min-height: 60px;
+            }
+            button {
+                font-size: 1.5rem;
+                padding: 15px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-effect"></div> <div class="container">
+        <h1>Where We Dropping?</h1>
+        
+        <form id="droppingForm" action="https://formspree.io/f/xjklegkk" method="POST">
+            <div class="location-grid" id="locationGrid">
+                </div>
+            
+            <input type="hidden" name="location" id="selectedLocationInput" required>
+            
+            <button type="submit" id="submitButton" disabled>Let's Go!</button>
+        </form>
+        
+        <p id="formSuccessMessage" class="form-message">Drop confirmed! See you there!</p>
+
+        <div class="sub-text">OG Map • Season 1</div>
+    </div>
+
+    <script>
+        const locations = [
+            "Tilted Towers", "Pleasant Park", "Retail Row", "Greasy Grove",
+            "Lonely Lodge", "Loot Lake", "Salty Springs", "Dusty Depot",
+            "Tomato Town", "Wailing Woods", "Moisty Mire"
+        ];
+        const locationGrid = document.getElementById('locationGrid');
+        const selectedLocationInput = document.getElementById('selectedLocationInput');
+        const submitButton = document.getElementById('submitButton');
+        const droppingForm = document.getElementById('droppingForm');
+        const formSuccessMessage = document.getElementById('formSuccessMessage');
+
+        let selectedCard = null;
+
+        // Populate location cards
+        locations.forEach(location => {
+            const card = document.createElement('div');
+            card.classList.add('location-card');
+            card.textContent = location;
+            card.dataset.location = location; // Store the location in a data attribute
+
+            card.addEventListener('click', () => {
+                if (selectedCard) {
+                    selectedCard.classList.remove('selected');
+                }
+                card.classList.add('selected');
+                selectedCard = card;
+                selectedLocationInput.value = location; // Set the hidden input's value
+                submitButton.disabled = false; // Enable submit button
+            });
+            locationGrid.appendChild(card);
+        });
+
+        // Handle form submission
+        droppingForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            if (!selectedLocationInput.value) {
+                alert('Please select a drop location!');
+                return;
+            }
+
+            // Temporarily disable button and show loading if desired
+            submitButton.disabled = true;
+            submitButton.textContent = 'Dropping...';
+
+            const formData = new FormData(droppingForm);
+            try {
+                const response = await fetch(droppingForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json' // Essential for Formspree AJAX
+                    }
+                });
+
+                if (response.ok) {
+                    formSuccessMessage.style.display = 'block'; // Show success message
+                    droppingForm.style.display = 'none'; // Hide the form
+                    // You can add a redirect here if you want: window.location.href = '/thank-you.html';
+                } else {
+                    const data = await response.json();
+                    if (data.errors) {
+                        alert(data.errors.map(error => error.message).join(", "));
+                    } else {
+                        alert('Oops! There was a problem submitting your drop. Please try again.');
+                    }
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Let\'s Go!';
+                }
+            } catch (error) {
+                alert('Network error. Please check your connection and try again.');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Let\'s Go!';
+            }
+        });
+
+        // Particle generation for background effect
+        const backgroundEffect = document.querySelector('.background-effect');
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            const size = Math.random() * 5 + 2; // Size between 2 and 7px
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            
+            // Random start/end points for animation
+            particle.style.setProperty('--x1', `${Math.random() * 100}vw`);
+            particle.style.setProperty('--y1', `${Math.random() * 100}vh`);
+            particle.style.setProperty('--x2', `${Math.random() * 100}vw`);
+            particle.style.setProperty('--y2', `${Math.random() * 100}vh`);
+            particle.style.setProperty('--x3', `${Math.random() * 100}vw`);
+            particle.style.setProperty('--y3', `${Math.random() * 100}vh`);
+            particle.style.setProperty('--x4', `${Math.random() * 100}vw`);
+            particle.style.setProperty('--y4', `${Math.random() * 100}vh`);
+            
+            particle.style.animationDelay = `-${Math.random() * 15}s`; // Stagger animation start
+            backgroundEffect.appendChild(particle);
+        }
+    </script>
+</body>
+</html>
