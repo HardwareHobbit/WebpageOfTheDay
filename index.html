@@ -100,9 +100,9 @@ const tutorialBox = document.getElementById('tutorial');
 
 // Game Constants
 const GRAVITY = 0.4;
-const FRICTION = 0.98; // Air resistance
-const GROUND_FRICTION = 0.8;
-const BOUNCE_DAMPENING = 0.6;
+const FRICTION = 0.99; // Air resistance (slightly less friction)
+const GROUND_FRICTION = 0.9; // Less friction on ground so it slides/bounces further (was 0.8)
+const BOUNCE_DAMPENING = 0.75; // Bouncier (was 0.6)
 const CANNON_BASE_X = 100;
 const CANNON_BASE_Y_OFFSET = 100; // From bottom
 
@@ -228,7 +228,7 @@ function fireCannon() {
     tutorialBox.classList.add('hidden');
     
     // Calculate velocity based on angle and power
-    const velocity = power * 1.5; // Multiplier for feel
+    const velocity = power * 1.8; // Increased multiplier for more speed (was 1.5)
     turkey.vx = Math.cos(angle) * velocity;
     turkey.vy = -Math.sin(angle) * velocity;
     
