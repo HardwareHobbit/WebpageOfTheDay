@@ -1,434 +1,541 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RefreshCw, Play, Trophy } from 'lucide-react';
-
-const TurkeyCannon = () => {
-  // Game States: 'menu', 'aiming', 'powering', 'flying', 'landed'
-  const [gameState, setGameState] = useState('menu');
-  const [score, setScore] = useState(0); // Distance
-  const [highScore, setHighScore] = useState(0);
-  
-  // Physics State
-  const [turkeyPos, setTurkeyPos] = useState({ x: 0, y: 0, rotation: 0 });
-  const [cameraX, setCameraX] = useState(0);
-  
-  // Launch State
-  const [angle, setAngle] = useState(45);
-  const [power, setPower] = useState(0);
-  const [angleDirection, setAngleDirection] = useState(1);
-  const [powerDirection, setPowerDirection] = useState(1);
-
-  // Game Objects
-  const [objects, setObjects] = useState([]);
-  const [specialEnd, setSpecialEnd] = useState(false); // True if hit table
-  
-  // Refs for physics loop (to avoid closure staleness)
-  const physicsRef = useRef({
-    x: 0, y: 0, vx: 0, vy: 0, rot: 0, rotSpeed: 0, isFlying: false
-  });
-  const requestRef = useRef();
-  
-  // Constants
-  const GROUND_Y = 500; // The "floor" in SVG coordinates
-  const GRAVITY = 0.4;
-  const AIR_DRAG = 0.995;
-  const GROUND_FRICTION = 0.8;
-  const BOUNCE_DAMPING = 0.6;
-  
-  // Generate obstacles
-  const generateObjects = () => {
-    const objs = [];
-    let currentX = 800; // Start placing objects after the cannon
-    
-    // Generate for 20,000 pixels of distance
-    while (currentX < 50000) {
-      currentX += 400 + Math.random() * 800;
-      
-      const rand = Math.random();
-      let type = 'hay'; // Standard bounce
-      
-      if (rand > 0.92) type = 'table'; // 8% chance of death
-      else if (rand > 0.75) type = 'tnt'; // 17% chance of boost
-      else type = 'hay'; // 75% chance of bounce
-      
-      objs.push({ x: currentX, type, id: currentX });
-    }
-    return objs;
-  };
-
-  const startGame = () => {
-    setGameState('aiming');
-    setScore(0);
-    setSpecialEnd(false);
-    setObjects(generateObjects());
-    physicsRef.current = { x: 100, y: GROUND_Y - 50, vx: 0, vy: 0, rot: 0, rotSpeed: 0, isFlying: false };
-    setTurkeyPos({ x: 100, y: GROUND_Y - 50, rotation: 0 });
-    setCameraX(0);
-    setAngle(45);
-    setPower(0);
-  };
-
-  const handleInput = () => {
-    if (gameState === 'aiming') {
-      setGameState('powering');
-    } else if (gameState === 'powering') {
-      launchTurkey();
-    } else if (gameState === 'landed') {
-      startGame();
-    }
-  };
-
-  const launchTurkey = () => {
-    setGameState('flying');
-    const rad = (angle * Math.PI) / 180;
-    const velocity = 15 + (power / 100) * 25; // Speed between 15 and 40
-    
-    physicsRef.current = {
-      x: 100, // Cannon muzzle x
-      y: GROUND_Y - 80, // Cannon muzzle y
-      vx: Math.cos(rad) * velocity,
-      vy: -Math.sin(rad) * velocity,
-      rot: -45,
-      rotSpeed: 10,
-      isFlying: true
-    };
-  };
-
-  // Input Loops (Angle & Power)
-  useEffect(() => {
-    let interval;
-    if (gameState === 'aiming') {
-      interval = setInterval(() => {
-        setAngle(prev => {
-          if (prev >= 80) setAngleDirection(-1);
-          if (prev <= 10) setAngleDirection(1);
-          return prev + angleDirection;
-        });
-      }, 20);
-    } else if (gameState === 'powering') {
-      interval = setInterval(() => {
-        setPower(prev => {
-          if (prev >= 100) setPowerDirection(-1);
-          if (prev <= 0) setPowerDirection(1);
-          return prev + powerDirection * 2;
-        });
-      }, 10);
-    }
-    return () => clearInterval(interval);
-  }, [gameState, angleDirection, powerDirection]);
-
-  // Physics Loop
-  const updatePhysics = useCallback(() => {
-    if (gameState !== 'flying') return;
-
-    const p = physicsRef.current;
-    
-    // Apply Forces
-    p.vy += GRAVITY;
-    p.vx *= AIR_DRAG;
-    p.vy *= AIR_DRAG;
-    
-    // Move
-    p.x += p.vx;
-    p.y += p.vy;
-    p.rot += p.rotSpeed;
-
-    // Ground Collision
-    if (p.y >= GROUND_Y) {
-      p.y = GROUND_Y;
-      
-      // Bounce or Slide?
-      if (Math.abs(p.vy) > 2) {
-        p.vy = -p.vy * BOUNCE_DAMPING;
-        p.vx *= GROUND_FRICTION; // Friction on bounce impact
-        p.rotSpeed *= 0.8;
-      } else {
-        p.vy = 0;
-        p.vx *= GROUND_FRICTION; // Slide friction
-        p.rotSpeed *= 0.8; // Stop rotating as we slide
-        p.rot = 0; // Align to ground
-      }
-
-      // Stop Condition
-      if (Math.abs(p.vx) < 0.1 && Math.abs(p.vy) < 0.1) {
-        p.isFlying = false;
-        setGameState('landed');
-        if (p.x > highScore) setHighScore(Math.floor(p.x));
-      }
-    }
-
-    // Object Collision
-    // Simple box collision
-    const turkeyRadius = 20;
-    objects.forEach(obj => {
-      // Check X range (object width approx 60)
-      if (p.x + turkeyRadius > obj.x && p.x - turkeyRadius < obj.x + 60) {
-        // Check Y range (objects sit on ground)
-        if (p.y + turkeyRadius > GROUND_Y - 50) { // Approx object height
-          
-          if (obj.type === 'tnt') {
-             // EXPLOSION
-             p.vy = -25; // Big bounce up
-             p.vx += 15; // Big boost forward
-             p.rotSpeed = 20;
-             p.y = GROUND_Y - 60; // Prevent sticking
-          } else if (obj.type === 'hay') {
-             // BOUNCE
-             p.vy = -15;
-             p.vx *= 1.1; // Slight speed maintenance
-             p.y = GROUND_Y - 60;
-          } else if (obj.type === 'table') {
-             // GAME OVER
-             p.vx = 0;
-             p.vy = 0;
-             p.y = GROUND_Y - 30; // Sit on table
-             p.isFlying = false;
-             setSpecialEnd(true);
-             setGameState('landed');
-             if (p.x > highScore) setHighScore(Math.floor(p.x));
-          }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy Thanksgiving: Turkey Toss!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none; /* Prevent scrolling on mobile */
         }
-      }
-    });
+        #gameCanvas {
+            display: block;
+        }
+        .ui-layer {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .interactive {
+            pointer-events: auto;
+        }
+        /* Custom animations */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .pulse-anim {
+            animation: pulse 2s infinite;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
 
-    // Update State for React Render
-    setTurkeyPos({ x: p.x, y: p.y, rotation: p.rot });
-    setScore(Math.floor(p.x / 10)); // 10px = 1m
-    
-    // Camera Follow logic (keep turkey left-center)
-    const targetCamX = p.x - 200; // Keep turkey 200px from left
-    setCameraX(prev => Math.max(0, targetCamX)); // Don't scroll left of 0
+    <!-- Canvas Layer -->
+    <canvas id="gameCanvas"></canvas>
 
-    if (p.isFlying) {
-      requestRef.current = requestAnimationFrame(updatePhysics);
-    }
-  }, [gameState, objects, highScore]);
-
-  useEffect(() => {
-    if (gameState === 'flying') {
-      requestRef.current = requestAnimationFrame(updatePhysics);
-    }
-    return () => cancelAnimationFrame(requestRef.current);
-  }, [gameState, updatePhysics]);
-
-
-  return (
-    <div 
-      className="fixed inset-0 overflow-hidden bg-sky-200 font-sans select-none touch-manipulation cursor-pointer"
-      onMouseDown={handleInput}
-      onTouchStart={handleInput}
-    >
-      
-      {/* --- UI LAYER --- */}
-      <div className="absolute top-4 left-4 z-50 flex gap-4 pointer-events-none">
-        <div className="bg-white/90 p-3 rounded-xl shadow-lg border-2 border-orange-200">
-          <div className="text-xs text-orange-600 font-bold uppercase">Distance</div>
-          <div className="text-2xl font-black text-orange-800">{score}m</div>
-        </div>
-        {highScore > 0 && (
-          <div className="bg-white/50 p-3 rounded-xl shadow-lg border-2 border-orange-100">
-             <div className="text-xs text-orange-600 font-bold uppercase">Best</div>
-             <div className="text-xl font-bold text-orange-800 flex items-center gap-1">
-                <Trophy size={16} /> {Math.floor(highScore / 10)}m
-             </div>
-          </div>
-        )}
-      </div>
-
-      {/* --- MENU OVERLAYS --- */}
-      {gameState === 'menu' && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-sm text-center animate-in zoom-in duration-300 border-4 border-orange-500">
-            <h1 className="text-4xl font-black text-orange-800 mb-2">Turkey Cannon</h1>
-            <p className="text-stone-600 mb-6">Launch the bird! Avoid the dinner table.</p>
-            <div className="flex justify-center mb-6 text-4xl">🦃💨</div>
-            <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full text-xl shadow-lg w-full flex items-center justify-center gap-2">
-              <Play fill="currentColor" /> Play
-            </button>
-            <p className="text-xs text-stone-400 mt-4">Tap to set Angle, then Power</p>
-          </div>
-        </div>
-      )}
-
-      {gameState === 'landed' && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-sm text-center animate-in slide-in-from-bottom-10 border-4 border-orange-500">
-            <h2 className="text-3xl font-bold text-stone-800 mb-2">
-              {specialEnd ? "DINNER TIME!" : "Flight Over"}
-            </h2>
-            <div className="text-xs text-stone-500 uppercase tracking-widest font-bold">Total Distance</div>
-            <div className="text-6xl font-black text-orange-600 mb-6">{score}m</div>
+    <!-- UI Overlay Layer -->
+    <div class="ui-layer">
+        
+        <!-- Header / Score -->
+        <div class="flex justify-between items-start">
+            <div class="bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-lg border-2 border-orange-300">
+                <h1 class="text-2xl font-bold text-orange-800 m-0 leading-none">🦃 Turkey Toss</h1>
+                <p class="text-sm text-gray-600 mt-1">Distance: <span id="scoreDisplay" class="font-mono font-bold text-lg text-orange-600">0</span> ft</p>
+                <p class="text-xs text-gray-500">Best: <span id="highScoreDisplay" class="font-mono">0</span> ft</p>
+            </div>
             
-            {specialEnd ? (
-               <div className="bg-red-100 text-red-800 p-4 rounded-xl mb-6 text-sm font-bold">
-                  You hit the dinner table. Game Over.
-               </div>
-            ) : null}
-
-            <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full text-xl shadow-lg w-full flex items-center justify-center gap-2">
-              <RefreshCw /> Launch Again
-            </button>
-          </div>
+            <div id="tutorial" class="bg-black/60 text-white p-3 rounded-lg text-sm max-w-[200px] text-right">
+                Aim with mouse/touch.<br>
+                <strong>Hold & Release</strong> to Fire!
+            </div>
         </div>
-      )}
 
+        <!-- Game Over Modal -->
+        <div id="gameOverScreen" class="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden interactive z-50">
+            <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-md w-full border-4 border-orange-500 transform scale-100 transition-transform">
+                <div class="text-6xl mb-4">🍗</div>
+                <h2 class="text-4xl font-black text-orange-800 mb-2">DINNER IS SERVED!</h2>
+                <p class="text-gray-600 mb-6 text-lg">You traveled <span id="finalScore" class="font-bold text-orange-600">0</span> feet.</p>
+                
+                <div class="bg-orange-100 p-4 rounded-lg mb-6 text-left">
+                    <p class="font-serif italic text-orange-900">"Wishing you a Thanksgiving overflowing with love, laughter, and bouncing turkeys."</p>
+                </div>
 
-      {/* --- GAME WORLD --- */}
-      {/* We translate the entire world group based on cameraX */}
-      <svg 
-        className="w-full h-full"
-        viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <g transform={`translate(${-cameraX}, 0)`}>
-          
-          {/* Background Elements (Parallax) */}
-          {/* Sky Gradient handled by CSS class on div */}
-          
-          {/* Far Hills */}
-          <path 
-             d={`M ${cameraX} 500 Q ${cameraX + 500} 300 ${cameraX + 1000} 500 T ${cameraX + 2000} 500 V 1000 H ${cameraX} Z`} 
-             fill="#84cc16" 
-             className="opacity-50"
-          />
-           <path 
-             d={`M ${cameraX - 200} 550 Q ${cameraX + 600} 400 ${cameraX + 1400} 550 V 1000 H ${cameraX - 200} Z`} 
-             fill="#65a30d" 
-             className="opacity-70"
-          />
+                <button onclick="resetGame()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-4 px-6 rounded-xl text-xl shadow-lg transform transition active:scale-95">
+                    Launch Again! 🚀
+                </button>
+            </div>
+        </div>
 
-          {/* Clouds (Move with camera but slower) */}
-          <g transform={`translate(${cameraX * 0.8}, 0)`}>
-             <Cloud x={200} y={100} scale={1} />
-             <Cloud x={800} y={150} scale={1.5} />
-             <Cloud x={1400} y={80} scale={0.8} />
-          </g>
-
-          {/* Cannon (Fixed at start) */}
-          <g transform="translate(100, 500)">
-            {/* Base */}
-            <path d="M-30 0 L30 0 L20 -40 L-20 -40 Z" fill="#44403c" />
-            <circle cx="0" cy="0" r="25" fill="#292524" />
-            
-            {/* Barrel (Rotates) */}
-            <g transform={`rotate(${-angle})`}>
-              <rect x="-15" y="-80" width="30" height="80" fill="#1c1917" rx="5" />
-              <rect x="-18" y="-20" width="36" height="10" fill="#44403c" />
-              {/* Power Meter on Cannon */}
-              {(gameState === 'aiming' || gameState === 'powering') && (
-                <rect x="20" y={-80 + (80 - (power/100)*80)} width="10" height={(power/100)*80} fill={power > 90 ? '#ef4444' : '#eab308'} />
-              )}
-            </g>
-          </g>
-
-          {/* Obstacles */}
-          {objects.map((obj) => (
-             <g key={obj.id} transform={`translate(${obj.x}, ${GROUND_Y})`}>
-               {obj.type === 'hay' && <HayBale />}
-               {obj.type === 'tnt' && <TNTBox />}
-               {obj.type === 'table' && <DinnerTable />}
-             </g>
-          ))}
-
-          {/* The Turkey */}
-          <g 
-             transform={`translate(${turkeyPos.x}, ${turkeyPos.y}) rotate(${turkeyPos.rotation})`}
-          >
-             {specialEnd ? <RoastedTurkey /> : <FlyingTurkey />}
-          </g>
-
-          {/* Ground */}
-          <rect x={cameraX - 100} y={GROUND_Y} width={window.innerWidth + 200} height={500} fill="#4d7c0f" />
-          {/* Ground pattern/grass details could go here */}
-
-          {/* Distance Markers */}
-          {Array.from({ length: 50 }).map((_, i) => (
-             <g key={i} transform={`translate(${(i+1) * 1000}, ${GROUND_Y + 30})`}>
-                <text textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">{(i+1)*100}m</text>
-                <line x1="0" y1="-30" x2="0" y2="-10" stroke="white" strokeWidth="2" strokeOpacity="0.5"/>
-             </g>
-          ))}
-
-        </g>
-      </svg>
     </div>
-  );
+
+<script>
+/**
+ * GAME CONFIGURATION & STATE
+ */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreDisplay = document.getElementById('scoreDisplay');
+const highScoreDisplay = document.getElementById('highScoreDisplay');
+const gameOverScreen = document.getElementById('gameOverScreen');
+const finalScoreSpan = document.getElementById('finalScore');
+const tutorialBox = document.getElementById('tutorial');
+
+// Game Constants
+const GRAVITY = 0.4;
+const FRICTION = 0.98; // Air resistance
+const GROUND_FRICTION = 0.8;
+const BOUNCE_DAMPENING = 0.6;
+const CANNON_BASE_X = 100;
+const CANNON_BASE_Y_OFFSET = 100; // From bottom
+
+// Game State
+let gameState = 'AIMING'; // AIMING, CHARGING, FLYING, ENDED
+let power = 0;
+let maxPower = 35;
+let angle = 0;
+let distance = 0;
+let highScore = 0;
+let cameraOffset = 0;
+let frameId;
+let particles = [];
+
+// Input State
+let mouseX = 0;
+let mouseY = 0;
+let isMouseDown = false;
+
+// Entities
+let turkey = {
+    x: 0, y: 0, vx: 0, vy: 0, r: 0, vr: 0, 
+    radius: 20, 
+    state: 'ALIVE', // ALIVE, ROASTED
+    onGround: false
 };
 
-// --- ASSET COMPONENTS ---
+let obstacles = [];
 
-const FlyingTurkey = () => (
-  <g transform="translate(-20, -20) scale(0.6)">
-    {/* Body */}
-    <ellipse cx="30" cy="40" rx="25" ry="18" fill="#78350f" />
-    {/* Wings flapping logic could go here, stick to static flight pose */}
-    <path d="M20 35 Q 5 20 25 20" stroke="#451a03" strokeWidth="3" fill="none" />
-    <path d="M40 35 Q 55 20 35 20" stroke="#451a03" strokeWidth="3" fill="none" />
-    {/* Neck/Head */}
-    <circle cx="55" cy="25" r="12" fill="#78350f" />
-    <path d="M63 22 L 73 25 L 63 28 Z" fill="#facc15" /> {/* Beak */}
-    <path d="M62 28 Q 65 35 60 38" stroke="#dc2626" strokeWidth="3" /> {/* Snood */}
-    <circle cx="58" cy="22" r="3" fill="white" />
-    <circle cx="59" cy="22" r="1" fill="black" />
-    {/* Tail */}
-    <path d="M5 40 L -10 30 L 5 50" fill="#ea580c" />
-  </g>
-);
+/**
+ * INITIALIZATION
+ */
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
 
-const RoastedTurkey = () => (
-  <g transform="translate(-25, -15) scale(0.7)">
-    <ellipse cx="35" cy="40" rx="30" ry="20" fill="#a16207" />
-    <circle cx="15" cy="40" r="8" fill="#a16207" />
-    <circle cx="55" cy="40" r="8" fill="#a16207" />
-    <path d="M10 40 L 0 40" stroke="white" strokeWidth="4" />
-    <path d="M60 40 L 70 40" stroke="white" strokeWidth="4" />
-    {/* Steam lines */}
-    <path d="M35 15 Q 40 5 35 0" stroke="white" strokeWidth="2" strokeOpacity="0.5" />
-    <path d="M45 15 Q 50 5 45 0" stroke="white" strokeWidth="2" strokeOpacity="0.5" />
-  </g>
-);
+function init() {
+    // Reset Turkey
+    turkey.x = CANNON_BASE_X;
+    turkey.y = canvas.height - CANNON_BASE_Y_OFFSET;
+    turkey.vx = 0;
+    turkey.vy = 0;
+    turkey.r = 0;
+    turkey.vr = 0;
+    turkey.state = 'ALIVE';
+    turkey.onGround = false;
 
-const HayBale = () => (
-  <g transform="translate(0, -40)">
-     <rect x="0" y="0" width="50" height="40" fill="#eab308" rx="2" />
-     <line x1="10" y1="0" x2="10" y2="40" stroke="#ca8a04" strokeWidth="2" />
-     <line x1="25" y1="0" x2="25" y2="40" stroke="#ca8a04" strokeWidth="2" />
-     <line x1="40" y1="0" x2="40" y2="40" stroke="#ca8a04" strokeWidth="2" />
-     <line x1="0" y1="10" x2="50" y2="10" stroke="#ca8a04" strokeWidth="2" />
-     <line x1="0" y1="30" x2="50" y2="30" stroke="#ca8a04" strokeWidth="2" />
-  </g>
-);
+    // Reset World
+    cameraOffset = 0;
+    power = 0;
+    gameState = 'AIMING';
+    obstacles = [];
+    particles = [];
+    generateObstacles(0, 2000); // Initial chunk
 
-const TNTBox = () => (
-  <g transform="translate(0, -40)">
-    <rect x="0" y="0" width="40" height="40" fill="#dc2626" rx="2" />
-    <text x="20" y="25" textAnchor="middle" fill="white" fontWeight="bold" fontSize="14">TNT</text>
-    {/* Fuse */}
-    <path d="M20 0 Q 20 -10 30 -15" stroke="#44403c" strokeWidth="2" fill="none" />
-    <circle cx="30" cy="-15" r="2" fill="#f59e0b" className="animate-pulse" />
-  </g>
-);
+    // UI
+    gameOverScreen.classList.add('hidden');
+    tutorialBox.classList.remove('hidden');
+    scoreDisplay.innerText = "0";
+    
+    // Start Loop if not running
+    if (!frameId) loop();
+}
 
-const DinnerTable = () => (
-  <g transform="translate(0, -40)">
-    {/* Tablecloth */}
-    <rect x="0" y="0" width="80" height="10" fill="white" />
-    {/* Legs */}
-    <rect x="10" y="10" width="5" height="30" fill="#78350f" />
-    <rect x="65" y="10" width="5" height="30" fill="#78350f" />
-    {/* Plates */}
-    <ellipse cx="20" cy="0" rx="8" ry="2" fill="#e5e5e5" />
-    <ellipse cx="60" cy="0" rx="8" ry="2" fill="#e5e5e5" />
-    <rect x="0" y="0" width="80" height="40" fill="transparent" /> {/* Hitbox visual help */}
-  </g>
-);
+/**
+ * INPUT HANDLING
+ */
+function getPointerPos(e) {
+    if (e.touches) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
+}
 
-const Cloud = ({ x, y, scale }) => (
-  <path 
-    transform={`translate(${x}, ${y}) scale(${scale})`}
-    d="M25,60.5 c0,0-23.5-12.5-3.5-50.5 c0,0,13-33.5,45.5-10.5 c0,0,17.5-31.5,47.5-0.5 c0,0,32.5-11.5,30.5,29.5 c0,0,22,5.5,6,32.5 Z" 
-    fill="white" 
-    opacity="0.8" 
-  />
-);
+function handleStart(e) {
+    if (gameState === 'AIMING' || gameState === 'CHARGING') {
+        isMouseDown = true;
+        gameState = 'CHARGING';
+        const pos = getPointerPos(e);
+        mouseX = pos.x;
+        mouseY = pos.y;
+    }
+}
 
-export default TurkeyCannon;
+function handleMove(e) {
+    const pos = getPointerPos(e);
+    mouseX = pos.x;
+    mouseY = pos.y;
+    
+    if (gameState === 'AIMING' || gameState === 'CHARGING') {
+        // Calculate angle based on mouse position relative to cannon
+        const dy = (canvas.height - CANNON_BASE_Y_OFFSET) - mouseY;
+        const dx = mouseX - CANNON_BASE_X;
+        angle = Math.atan2(dy, dx);
+        // Clamp angle
+        if (angle < 0) angle = 0;
+        if (angle > Math.PI / 2) angle = Math.PI / 2;
+    }
+}
+
+function handleEnd(e) {
+    if (gameState === 'CHARGING') {
+        fireCannon();
+    }
+    isMouseDown = false;
+}
+
+window.addEventListener('mousedown', handleStart);
+window.addEventListener('mousemove', handleMove);
+window.addEventListener('mouseup', handleEnd);
+window.addEventListener('touchstart', handleStart, {passive: false});
+window.addEventListener('touchmove', handleMove, {passive: false});
+window.addEventListener('touchend', handleEnd);
+
+/**
+ * GAME LOGIC
+ */
+function fireCannon() {
+    gameState = 'FLYING';
+    tutorialBox.classList.add('hidden');
+    
+    // Calculate velocity based on angle and power
+    const velocity = power * 1.5; // Multiplier for feel
+    turkey.vx = Math.cos(angle) * velocity;
+    turkey.vy = -Math.sin(angle) * velocity;
+    
+    // Add some spin
+    turkey.vr = (Math.random() - 0.5) * 0.5;
+
+    // Boom effect
+    createParticles(turkey.x, turkey.y, 20, '#555');
+}
+
+function generateObstacles(startX, endX) {
+    // Generate items between startX and endX
+    for (let x = startX; x < endX; x += Math.random() * 300 + 150) {
+        if (x < 400) continue; // Don't spawn too close to cannon
+
+        const typeRoll = Math.random();
+        let type = 'PIE';
+        
+        if (typeRoll > 0.8) type = 'BOMB';
+        else if (typeRoll > 0.5) type = 'TABLE';
+        else type = 'PIE';
+
+        obstacles.push({
+            x: x,
+            y: canvas.height - 50, // Ground level approximation
+            type: type,
+            hit: false,
+            width: type === 'TABLE' ? 80 : 40,
+            height: 40
+        });
+    }
+}
+
+function createParticles(x, y, count, color) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10,
+            life: 1.0,
+            color: color
+        });
+    }
+}
+
+function createFeathers(x, y) {
+    createParticles(x, y, 10, '#8B4513'); // Brown feathers
+    createParticles(x, y, 5, '#FFF');    // White feathers
+}
+
+function update() {
+    // 1. Charging Logic
+    if (gameState === 'CHARGING') {
+        power += 0.5;
+        if (power > maxPower) power = 0; // Cycle power
+    }
+
+    // 2. Physics Logic
+    if (gameState === 'FLYING') {
+        // Gravity
+        turkey.vy += GRAVITY;
+        
+        // Apply Velocities
+        turkey.x += turkey.vx;
+        turkey.y += turkey.vy;
+        turkey.r += turkey.vr;
+
+        // Air Resistance
+        turkey.vx *= FRICTION;
+        turkey.vy *= FRICTION;
+
+        // Ground Collision
+        const groundY = canvas.height - 50;
+        if (turkey.y + turkey.radius > groundY) {
+            turkey.y = groundY - turkey.radius;
+            turkey.vy *= -BOUNCE_DAMPENING;
+            turkey.vx *= GROUND_FRICTION;
+            turkey.vr *= GROUND_FRICTION;
+            
+            // Stop if too slow
+            if (Math.abs(turkey.vx) < 0.1 && Math.abs(turkey.vy) < 0.5) {
+                endGame(false);
+            }
+        }
+
+        // Object Collision
+        obstacles.forEach(obj => {
+            if (obj.hit) return;
+
+            // Simple box collision
+            if (turkey.x + turkey.radius > obj.x && 
+                turkey.x - turkey.radius < obj.x + obj.width &&
+                turkey.y + turkey.radius > obj.y - obj.height) {
+                
+                if (obj.type === 'PIE') {
+                    // Trampoline effect
+                    turkey.vy = -18; // Big bounce
+                    turkey.vx += 2; // Speed boost
+                    createParticles(turkey.x, turkey.y, 10, '#FFA500'); // Orange filling
+                    obj.hit = true; // Use up the pie
+                } 
+                else if (obj.type === 'BOMB') {
+                    // Explosion
+                    turkey.vy = -25;
+                    turkey.vx += 10;
+                    createParticles(turkey.x, turkey.y, 30, '#FF0000');
+                    obj.hit = true;
+                } 
+                else if (obj.type === 'TABLE') {
+                    // Game Over trap
+                    turkey.vx = 0;
+                    turkey.vy = 0;
+                    turkey.y = obj.y - obj.height - turkey.radius + 15; // Sit on plate
+                    endGame(true);
+                }
+            }
+        });
+
+        // Generate more terrain as we fly
+        const rightEdge = turkey.x + canvas.width;
+        const lastObstacle = obstacles[obstacles.length - 1];
+        if (lastObstacle && lastObstacle.x < rightEdge) {
+            generateObstacles(lastObstacle.x, rightEdge + 2000);
+        }
+
+        // Camera Follow
+        if (turkey.x > CANNON_BASE_X + canvas.width / 4) {
+            cameraOffset = turkey.x - (CANNON_BASE_X + canvas.width / 4);
+        }
+
+        // Update Distance
+        distance = Math.floor(turkey.x / 10);
+        scoreDisplay.innerText = distance;
+    }
+
+    // 3. Particle System
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += GRAVITY * 0.5;
+        p.life -= 0.02;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+}
+
+function endGame(isRoasted) {
+    gameState = 'ENDED';
+    turkey.state = isRoasted ? 'ROASTED' : 'ALIVE';
+    
+    // Update High Score
+    if (distance > highScore) {
+        highScore = distance;
+        highScoreDisplay.innerText = highScore;
+    }
+
+    finalScoreSpan.innerText = distance;
+    setTimeout(() => {
+        gameOverScreen.classList.remove('hidden');
+    }, 500);
+}
+
+function resetGame() {
+    init();
+}
+
+/**
+ * RENDERING
+ */
+function draw() {
+    // Clear
+    ctx.fillStyle = '#87CEEB'; // Sky blue fallback
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Background Gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#87CEEB'); // Sky
+    gradient.addColorStop(1, '#FFF3E0'); // Horizon
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Sun
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(canvas.width - 100, 100, 50, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    
+    // Apply Camera translation
+    ctx.translate(-cameraOffset, 0);
+
+    // Draw Ground
+    ctx.fillStyle = '#558B2F'; // Grass green
+    ctx.fillRect(cameraOffset, canvas.height - 50, canvas.width, 500); // Infinite appearing
+    ctx.fillStyle = '#33691E'; // Top border
+    ctx.fillRect(cameraOffset, canvas.height - 50, canvas.width, 10);
+
+    // Draw Distance Markers (Every 100 ft)
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '20px Arial';
+    const startMarker = Math.floor(cameraOffset / 1000) * 1000;
+    for(let m = startMarker; m < cameraOffset + canvas.width; m += 500) {
+        if (m === 0) continue;
+        ctx.fillText(`${Math.floor(m/10)}ft`, m, canvas.height - 60);
+        ctx.fillRect(m, canvas.height - 50, 2, 20);
+    }
+
+    // Draw Obstacles
+    obstacles.forEach(obj => {
+        if (obj.hit && obj.type !== 'TABLE') return; // Don't draw consumed items
+
+        const y = obj.y - obj.height;
+        
+        if (obj.type === 'PIE') {
+            // Draw Pie
+            ctx.font = '40px Arial';
+            ctx.fillText('🥧', obj.x, obj.y);
+        } else if (obj.type === 'BOMB') {
+            // Draw Bomb
+            ctx.font = '40px Arial';
+            ctx.fillText('💣', obj.x, obj.y);
+        } else if (obj.type === 'TABLE') {
+            // Draw Table
+            ctx.font = '60px Arial';
+            ctx.fillText('🍽️', obj.x - 10, obj.y + 10);
+        }
+    });
+
+    // Draw Cannon (Only if near start)
+    if (cameraOffset < 500) {
+        ctx.save();
+        ctx.translate(CANNON_BASE_X, canvas.height - CANNON_BASE_Y_OFFSET);
+        
+        // Draw Mount
+        ctx.fillStyle = '#4a4a4a';
+        ctx.beginPath();
+        ctx.arc(0, 0, 30, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw Barrel
+        ctx.rotate(-angle);
+        ctx.fillStyle = '#333';
+        ctx.fillRect(0, -20, 100, 40);
+        
+        // Barrel Rings
+        ctx.fillStyle = '#Gold';
+        ctx.fillRect(90, -22, 10, 44);
+
+        ctx.restore();
+
+        // Draw Power Meter next to cannon
+        if (gameState === 'CHARGING' || gameState === 'AIMING') {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(CANNON_BASE_X - 50, canvas.height - CANNON_BASE_Y_OFFSET - 100, 10, 80);
+            
+            // Fill based on power
+            const powerPercent = power / maxPower;
+            const powerColor = powerPercent > 0.8 ? 'red' : (powerPercent > 0.5 ? 'orange' : 'green');
+            ctx.fillStyle = powerColor;
+            const h = 80 * powerPercent;
+            ctx.fillRect(CANNON_BASE_X - 50, canvas.height - CANNON_BASE_Y_OFFSET - 20 - h, 10, h);
+        }
+    }
+
+    // Draw Turkey
+    ctx.save();
+    ctx.translate(turkey.x, turkey.y);
+    ctx.rotate(turkey.r);
+    ctx.font = '40px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    if (turkey.state === 'ROASTED') {
+        ctx.fillText('🍗', 0, 0);
+    } else {
+        // Switch sprite based on velocity to look like it's tumbling
+        ctx.fillText('🦃', 0, 0);
+    }
+    ctx.restore();
+
+    // Draw Particles
+    particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    });
+
+    ctx.restore();
+}
+
+/**
+ * MAIN LOOP
+ */
+function loop() {
+    update();
+    draw();
+    frameId = requestAnimationFrame(loop);
+}
+
+// Start Game
+init();
+
+</script>
+</body>
+</html>
