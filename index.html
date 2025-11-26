@@ -1,335 +1,323 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Where We Dropping?</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-bg: linear-gradient(135deg, #1a0033 0%, #000000 100%);
-            --accent-purple: #8A2BE2; /* Amethyst */
-            --accent-blue: #00BFFF; /* Deep Sky Blue */
-            --text-gold: #FFD700; /* Gold */
-            --text-light: #E0FFFF; /* Light Cyan */
-            --card-bg: rgba(255, 255, 255, 0.08);
-            --card-border: rgba(138, 43, 226, 0.4);
-            --selected-border: #00BFFF;
-            --button-bg: #8A2BE2;
-            --button-shadow: #6A1AAB;
-            --transition-speed: 0.3s;
-        }
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Trophy, Clock, RefreshCw, Play, X } from 'lucide-react';
 
-        body {
-            margin: 0;
-            padding: 0;
-            background: var(--primary-bg);
-            font-family: 'Bebas Neue', sans-serif;
-            color: var(--text-light);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            overflow-x: hidden;
-            position: relative;
-        }
+const ThanksgivingChase = () => {
+  const [gameState, setGameState] = useState('menu'); // menu, playing, gameOver
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [turkeys, setTurkeys] = useState([]);
+  const [particles, setParticles] = useState([]);
+  
+  // Game Configuration
+  const SPAWN_RATE = 800; // ms between spawns
+  const GAME_DURATION = 30;
+  
+  const requestRef = useRef();
+  const lastSpawnTime = useRef(0);
+  const playAreaRef = useRef(null);
 
-        /* Glitch effect for heading */
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3.5rem;
-            text-transform: uppercase;
-            color: var(--text-gold);
-            margin-bottom: 40px;
-            text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
-            position: relative;
-            animation: pulse 2s infinite alternate;
-        }
-        @keyframes pulse {
-            0% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.6); transform: scale(1); }
-            100% { text-shadow: 0 0 25px rgba(255, 215, 0, 0.9), 0 0 50px rgba(255, 215, 0, 0.3); transform: scale(1.02); }
-        }
+  // Start Game
+  const startGame = () => {
+    setGameState('playing');
+    setScore(0);
+    setTimeLeft(GAME_DURATION);
+    setTurkeys([]);
+    setParticles([]);
+    lastSpawnTime.current = Date.now();
+  };
 
-        .container {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 0 40px rgba(138, 43, 226, 0.4);
-            padding: 30px;
-            max-width: 800px;
-            width: 90%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            z-index: 10;
-        }
+  // Game Loop
+  const updateGame = useCallback(() => {
+    if (gameState !== 'playing') return;
 
-        .location-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-            width: 100%;
-        }
+    const now = Date.now();
+    const dt = 16; // Approx 60fps
 
-        .location-card {
-            background: var(--card-bg);
-            border: 2px solid var(--card-border);
-            border-radius: 10px;
-            padding: 20px 10px;
-            cursor: pointer;
-            transition: all var(--transition-speed) ease-in-out;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            user-select: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 80px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
+    // Spawn Turkeys
+    if (now - lastSpawnTime.current > SPAWN_RATE) {
+      spawnTurkey();
+      lastSpawnTime.current = now;
+    }
 
-        .location-card:hover {
-            border-color: var(--accent-purple);
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.6);
-            transform: translateY(-5px) scale(1.02);
-            background: rgba(255, 255, 255, 0.15);
-        }
+    setTurkeys(prevTurkeys => 
+      prevTurkeys
+        .map(t => ({
+          ...t,
+          x: t.x + (t.direction === 'right' ? t.speed : -t.speed),
+          // Simple running animation frame toggle
+          frame: (Math.floor(now / 100) % 2) 
+        }))
+        .filter(t => t.x > -10 && t.x < 110) // Remove if off screen (using % for x)
+    );
 
-        .location-card.selected {
-            border-color: var(--selected-border);
-            background: rgba(0, 191, 255, 0.2);
-            box-shadow: 0 0 25px rgba(0, 191, 255, 0.8), 0 0 50px rgba(0, 191, 255, 0.3);
-            transform: scale(1.05);
-            animation: glow var(--transition-speed) forwards;
-        }
-        @keyframes glow {
-            from { box-shadow: 0 0 10px rgba(0, 191, 255, 0.4); }
-            to { box-shadow: 0 0 25px rgba(0, 191, 255, 0.8), 0 0 50px rgba(0, 191, 255, 0.3); }
-        }
+    requestRef.current = requestAnimationFrame(updateGame);
+  }, [gameState]);
 
-        button {
-            background-color: var(--button-bg);
-            color: white;
-            padding: 18px 40px;
-            border: none;
-            border-radius: 10px;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.8rem;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all var(--transition-speed) ease-in-out;
-            box-shadow: 0 8px 0 var(--button-shadow);
-            margin-top: 20px;
-            letter-spacing: 1px;
-        }
+  useEffect(() => {
+    if (gameState === 'playing') {
+      requestRef.current = requestAnimationFrame(updateGame);
+    }
+    return () => cancelAnimationFrame(requestRef.current);
+  }, [gameState, updateGame]);
 
-        button:hover {
-            background-color: var(--accent-blue);
-            box-shadow: 0 8px 0 #008DCC;
-            transform: translateY(-2px);
-        }
+  // Timer
+  useEffect(() => {
+    let interval;
+    if (gameState === 'playing' && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            setGameState('gameOver');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [gameState, timeLeft]);
 
-        button:active {
-            transform: translateY(6px);
-            box-shadow: 0 2px 0 var(--button-shadow);
-        }
+  const spawnTurkey = () => {
+    const direction = Math.random() > 0.5 ? 'right' : 'left';
+    const startX = direction === 'right' ? -10 : 110;
+    // Randomize vertical position (10% to 80% of screen height)
+    const startY = 10 + Math.random() * 70; 
+    
+    setTurkeys(prev => [...prev, {
+      id: Date.now() + Math.random(),
+      x: startX,
+      y: startY,
+      direction,
+      speed: 0.2 + Math.random() * 0.4, // Random speed
+      scale: 0.8 + Math.random() * 0.5, // Random size
+      type: Math.random() > 0.8 ? 'gold' : 'standard' // 20% chance of golden turkey
+    }]);
+  };
 
-        .sub-text {
-            margin-top: 25px;
-            font-size: 0.9rem;
-            opacity: 0.6;
-            font-family: 'Orbitron', sans-serif;
-            letter-spacing: 1px;
-            text-shadow: 0 0 5px rgba(255,255,255,0.2);
-        }
+  const catchTurkey = (id, x, y, type) => {
+    if (gameState !== 'playing') return;
 
-        /* Background animation - subtle glowing particles */
-        .background-effect {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            overflow: hidden;
-            z-index: 1;
-            pointer-events: none;
-        }
-        .particle {
-            position: absolute;
-            background: rgba(138, 43, 226, 0.5);
-            border-radius: 50%;
-            opacity: 0;
-            animation: moveParticle 15s infinite linear;
-        }
-        .particle:nth-child(2n) { background: rgba(0, 191, 255, 0.5); animation-duration: 20s; animation-delay: -5s;}
-        .particle:nth-child(3n) { background: rgba(255, 215, 0, 0.4); animation-duration: 10s; animation-delay: -10s;}
-        @keyframes moveParticle {
-            0% { transform: translate(var(--x1), var(--y1)) scale(0); opacity: 0; }
-            10% { opacity: 1; transform: translate(var(--x2), var(--y2)) scale(1); }
-            90% { opacity: 1; transform: translate(var(--x3), var(--y3)) scale(1.2); }
-            100% { transform: translate(var(--x4), var(--y4)) scale(0); opacity: 0; }
-        }
+    // Add Score
+    const points = type === 'gold' ? 5 : 1;
+    setScore(prev => prev + points);
 
-        /* Formspree message styling */
-        .form-message {
-            margin-top: 20px;
-            font-size: 1.1rem;
-            color: var(--text-gold);
-            display: none; /* Hidden by default */
-            animation: fadeIn 0.5s forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    // Remove Turkey
+    setTurkeys(prev => prev.filter(t => t.id !== id));
 
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 2.5rem;
-                margin-bottom: 25px;
-            }
-            .container {
-                padding: 20px;
-            }
-            .location-grid {
-                grid-template-columns: 1fr; /* Single column on small screens */
-            }
-            .location-card {
-                font-size: 1rem;
-                min-height: 60px;
-            }
-            button {
-                font-size: 1.5rem;
-                padding: 15px 30px;
-            }
-        }
-    </style>
-</head>
-<body>
+    // Create Explosion/Feather effect
+    const newParticles = Array.from({ length: 8 }).map((_, i) => ({
+      id: Date.now() + i,
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 2,
+      vy: (Math.random() - 0.5) * 2,
+      life: 1.0,
+      color: type === 'gold' ? '#fbbf24' : '#ea580c'
+    }));
+    
+    // We update particles in a separate state, but for simplicity in this loop 
+    // we'll just set them and let CSS handle fade out or simple cleanup
+    setParticles(prev => [...prev, ...newParticles]);
 
-    <div class="background-effect"></div> <div class="container">
-        <h1>Where We Dropping?</h1>
-        
-        <form id="droppingForm" action="https://formspree.io/f/xjklegkk" method="POST">
-            <div class="location-grid" id="locationGrid">
-                </div>
+    // Clean up particles after animation
+    setTimeout(() => {
+      setParticles(prev => prev.filter(p => p.id < Date.now()));
+    }, 1000);
+  };
+
+  return (
+    <div className="fixed inset-0 overflow-hidden font-sans select-none touch-manipulation">
+      
+      {/* Animated Sky Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-400 via-orange-300 to-yellow-200 animate-sky-shift" />
+      
+      {/* Rolling Hills (Static Background Elements) */}
+      <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-[#4d7c0f] rounded-t-[50%] scale-150 translate-y-10 opacity-80" />
+      <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-[#3f6212] rounded-t-[100%] scale-110 translate-y-4" />
+
+      {/* Clouds */}
+      <Cloud style={{ top: '10%', left: '10%', animationDuration: '40s' }} />
+      <Cloud style={{ top: '20%', left: '60%', animationDuration: '60s' }} />
+      <Cloud style={{ top: '15%', left: '80%', animationDuration: '50s' }} />
+
+      {/* Game UI Overlay */}
+      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-20 pointer-events-none">
+        <div className="bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-lg border-2 border-orange-200 flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-orange-800 font-bold text-xl">
+            <Trophy size={24} className="text-yellow-500" />
+            <span>{score}</span>
+          </div>
+          <div className="text-xs text-orange-600 font-bold uppercase tracking-wider">Score</div>
+        </div>
+
+        <div className={`bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-lg border-2 ${timeLeft < 10 ? 'border-red-400 animate-pulse' : 'border-orange-200'} flex flex-col gap-1 items-end`}>
+          <div className={`flex items-center gap-2 font-bold text-xl ${timeLeft < 10 ? 'text-red-600' : 'text-orange-800'}`}>
+            <span>{timeLeft}s</span>
+            <Clock size={24} />
+          </div>
+          <div className="text-xs text-orange-600 font-bold uppercase tracking-wider">Time Left</div>
+        </div>
+      </div>
+
+      {/* Main Game Area */}
+      <div ref={playAreaRef} className="absolute inset-0 z-10 overflow-hidden">
+        {turkeys.map(turkey => (
+          <div
+            key={turkey.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              catchTurkey(turkey.id, turkey.x, turkey.y, turkey.type);
+            }}
+            className="absolute cursor-pointer transform transition-transform active:scale-90 hover:scale-110"
+            style={{
+              left: `${turkey.x}%`,
+              top: `${turkey.y}%`,
+              width: `${80 * turkey.scale}px`,
+              height: `${80 * turkey.scale}px`,
+              transform: `scaleX(${turkey.direction === 'left' ? 1 : -1})`, // Flip based on direction
+              zIndex: Math.floor(turkey.y) // Simple depth sorting
+            }}
+          >
+             <RunningTurkeySVG frame={turkey.frame} type={turkey.type} />
+          </div>
+        ))}
+
+        {/* Catch Effects */}
+        {particles.map(p => (
+          <div
+            key={p.id}
+            className="absolute w-2 h-2 rounded-full animate-ping"
+            style={{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              backgroundColor: p.color,
+              opacity: 0.8
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Menu Screens */}
+      {gameState === 'menu' && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center border-4 border-orange-500 transform transition-all animate-in fade-in zoom-in duration-300">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-orange-800 mb-2 font-serif">Turkey Chase</h1>
+            <h2 className="text-xl text-orange-600 font-bold mb-6">Thanksgiving 2025</h2>
             
-            <input type="hidden" name="location" id="selectedLocationInput" required>
-            
-            <button type="submit" id="submitButton" disabled>Let's Go!</button>
-        </form>
-        
-        <p id="formSuccessMessage" class="form-message">Drop confirmed! See you there!</p>
+            <p className="text-stone-600 mb-8 text-lg">
+              The turkeys are escaping! Catch as many as you can before dinner time runs out.
+              <br/><br/>
+              <span className="text-sm font-bold text-yellow-600 bg-yellow-100 px-2 py-1 rounded">Gold Turkeys = 5 pts!</span>
+            </p>
 
-        <div class="sub-text">OG Map • Season 1</div>
+            <button 
+              onClick={startGame}
+              className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-xl font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3"
+            >
+              <Play fill="currentColor" /> Start Chasing
+            </button>
+          </div>
+        </div>
+      )}
+
+      {gameState === 'gameOver' && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center border-4 border-orange-500 animate-in slide-in-from-bottom-10">
+            <div className="absolute -top-12 left-1/2 transform -translate-x-1/2">
+              <div className="bg-yellow-400 p-4 rounded-full shadow-xl border-4 border-white">
+                <Trophy size={48} className="text-white" />
+              </div>
+            </div>
+
+            <h2 className="text-3xl font-bold text-stone-800 mt-8 mb-2">Time's Up!</h2>
+            <div className="text-6xl font-black text-orange-600 mb-2">{score}</div>
+            <p className="text-stone-500 uppercase tracking-widest font-bold text-sm mb-8">Turkeys Caught</p>
+
+            <div className="space-y-3">
+              <button 
+                onClick={startGame}
+                className="w-full bg-orange-500 text-white font-bold py-3 rounded-xl shadow-md hover:bg-orange-600 transition flex items-center justify-center gap-2"
+              >
+                <RefreshCw size={20} /> Play Again
+              </button>
+              <button 
+                onClick={() => setGameState('menu')}
+                className="w-full bg-stone-100 text-stone-600 font-bold py-3 rounded-xl hover:bg-stone-200 transition"
+              >
+                Back to Menu
+              </button>
+            </div>
+            
+            <p className="mt-6 text-xs text-stone-400">Happy Thanksgiving 2025!</p>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes sky-shift {
+          0% { background-position: 0% 0%; }
+          100% { background-position: 0% 100%; }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+      `}</style>
     </div>
+  );
+};
 
-    <script>
-        const locations = [
-            "Tilted Towers", "Pleasant Park", "Retail Row", "Greasy Grove",
-            "Lonely Lodge", "Loot Lake", "Salty Springs", "Dusty Depot",
-            "Tomato Town", "Wailing Woods", "Moisty Mire"
-        ];
-        const locationGrid = document.getElementById('locationGrid');
-        const selectedLocationInput = document.getElementById('selectedLocationInput');
-        const submitButton = document.getElementById('submitButton');
-        const droppingForm = document.getElementById('droppingForm');
-        const formSuccessMessage = document.getElementById('formSuccessMessage');
+// --- Components ---
 
-        let selectedCard = null;
+const Cloud = ({ style }) => (
+  <div className="absolute opacity-80" style={style}>
+    <svg width="100" height="60" viewBox="0 0 100 60" fill="white">
+      <path d="M10 40 Q20 20 40 30 Q50 10 70 30 Q90 20 90 40 Q100 60 70 60 L30 60 Q0 60 10 40 Z" />
+    </svg>
+  </div>
+);
 
-        // Populate location cards
-        locations.forEach(location => {
-            const card = document.createElement('div');
-            card.classList.add('location-card');
-            card.textContent = location;
-            card.dataset.location = location; // Store the location in a data attribute
+const RunningTurkeySVG = ({ frame, type }) => {
+  const isGold = type === 'gold';
+  const bodyColor = isGold ? '#fbbf24' : '#78350f'; // Gold or Brown
+  const tailColor1 = isGold ? '#fcd34d' : '#ea580c';
+  const tailColor2 = isGold ? '#f59e0b' : '#c2410c';
 
-            card.addEventListener('click', () => {
-                if (selectedCard) {
-                    selectedCard.classList.remove('selected');
-                }
-                card.classList.add('selected');
-                selectedCard = card;
-                selectedLocationInput.value = location; // Set the hidden input's value
-                submitButton.disabled = false; // Enable submit button
-            });
-            locationGrid.appendChild(card);
-        });
+  return (
+    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
+      <g transform="translate(0, 5)">
+        {/* Animated Legs */}
+        <g transform={`rotate(${frame ? 20 : -20} 45 80)`}>
+          <path d="M45 70 L 45 90 L 40 95" stroke="#facc15" strokeWidth="3" fill="none" />
+        </g>
+        <g transform={`rotate(${frame ? -20 : 20} 55 80)`}>
+          <path d="M55 70 L 55 90 L 60 95" stroke="#facc15" strokeWidth="3" fill="none" />
+        </g>
 
-        // Handle form submission
-        droppingForm.addEventListener('submit', async (event) => {
-            event.preventDefault(); // Prevent default form submission
+        {/* Tail */}
+        <path d="M10 50 Q 5 20 30 20 L 30 60 Z" fill={tailColor1} />
+        <path d="M20 50 Q 15 10 40 20 L 40 60 Z" fill={tailColor2} />
 
-            if (!selectedLocationInput.value) {
-                alert('Please select a drop location!');
-                return;
-            }
+        {/* Body */}
+        <ellipse cx="50" cy="60" rx="25" ry="20" fill={bodyColor} />
+        
+        {/* Wing */}
+        <path d="M40 55 Q 30 70 50 70" stroke={isGold ? '#b45309' : '#451a03'} strokeWidth="2" fill="none" />
 
-            // Temporarily disable button and show loading if desired
-            submitButton.disabled = true;
-            submitButton.textContent = 'Dropping...';
+        {/* Head/Neck */}
+        <g transform="translate(65, 40)">
+          <circle cx="0" cy="0" r="12" fill={bodyColor} />
+          {/* Beak */}
+          <path d="M8 -2 L 18 2 L 8 6 Z" fill="#facc15" />
+          {/* Snood */}
+          <path d="M6 4 Q 8 12 4 15" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" />
+          {/* Eye */}
+          <circle cx="2" cy="-2" r="2" fill="white" />
+          <circle cx="3" cy="-2" r="1" fill="black" />
+        </g>
+      </g>
+    </svg>
+  );
+};
 
-            const formData = new FormData(droppingForm);
-            try {
-                const response = await fetch(droppingForm.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json' // Essential for Formspree AJAX
-                    }
-                });
-
-                if (response.ok) {
-                    formSuccessMessage.style.display = 'block'; // Show success message
-                    droppingForm.style.display = 'none'; // Hide the form
-                    // You can add a redirect here if you want: window.location.href = '/thank-you.html';
-                } else {
-                    const data = await response.json();
-                    if (data.errors) {
-                        alert(data.errors.map(error => error.message).join(", "));
-                    } else {
-                        alert('Oops! There was a problem submitting your drop. Please try again.');
-                    }
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Let\'s Go!';
-                }
-            } catch (error) {
-                alert('Network error. Please check your connection and try again.');
-                submitButton.disabled = false;
-                submitButton.textContent = 'Let\'s Go!';
-            }
-        });
-
-        // Particle generation for background effect
-        const backgroundEffect = document.querySelector('.background-effect');
-        for (let i = 0; i < 20; i++) {
-            const particle = document.createElement('div');
-            particle.classList.add('particle');
-            const size = Math.random() * 5 + 2; // Size between 2 and 7px
-            particle.style.width = `${size}px`;
-            particle.style.height = `${size}px`;
-            
-            // Random start/end points for animation
-            particle.style.setProperty('--x1', `${Math.random() * 100}vw`);
-            particle.style.setProperty('--y1', `${Math.random() * 100}vh`);
-            particle.style.setProperty('--x2', `${Math.random() * 100}vw`);
-            particle.style.setProperty('--y2', `${Math.random() * 100}vh`);
-            particle.style.setProperty('--x3', `${Math.random() * 100}vw`);
-            particle.style.setProperty('--y3', `${Math.random() * 100}vh`);
-            particle.style.setProperty('--x4', `${Math.random() * 100}vw`);
-            particle.style.setProperty('--y4', `${Math.random() * 100}vh`);
-            
-            particle.style.animationDelay = `-${Math.random() * 15}s`; // Stagger animation start
-            backgroundEffect.appendChild(particle);
-        }
-    </script>
-</body>
-</html>
+export default ThanksgivingChase;
