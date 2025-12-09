@@ -168,7 +168,7 @@
             <h2 class="text-3xl font-bold text-yellow-300 mb-2 drop-shadow-sm">"Are ya winning, son?"</h2>
             
             <p class="text-white text-lg mb-6">
-                You scored: <span id="final-score" class="font-bold text-2xl text-green-300">0</span> / 20
+                You scored: <span id="final-score" class="font-bold text-2xl text-green-300">0</span> / <span id="total-score-display">20</span>
             </p>
 
             <div id="score-message" class="bg-white/20 p-4 rounded-xl text-white italic mb-6 text-sm border border-white/10">
@@ -287,6 +287,113 @@
             q: "My grief counselor died the other day.",
             a: "He was so good, I didn't even care.",
             options: ["I was devastated.", "I need a new one.", "It was tragic."]
+        },
+        // BATCH 1 JOKES
+        {
+            q: "I don't trust stairs.",
+            a: "They're always up to something.",
+            options: ["They have too many steps.", "They let me down.", "They are slippery."]
+        },
+        {
+            q: "What do you call someone with no body and no nose?",
+            a: "Nobody knows.",
+            options: ["A ghost.", "Invisible Bill.", "Headless Nick."]
+        },
+        {
+            q: "I was digging in our garden and found a chest full of gold coins. I was about to run inside and tell my wife.",
+            a: "Then I remembered why I was digging in the garden.",
+            options: ["But she doesn't like gold.", "Then I woke up.", "But I hid it instead."]
+        },
+        {
+            q: "I used to play piano by ear.",
+            a: "But now I use my hands.",
+            options: ["It hurt too much.", "I couldn't hear the music.", "My ear kept slipping."]
+        },
+        {
+            q: "Why did the golfer bring two pairs of pants?",
+            a: "In case he got a hole in one.",
+            options: ["One for practice.", "It was raining.", "He spills coffee a lot."]
+        },
+        {
+            q: "How do you make a tissue dance?",
+            a: "You put a little boogie in it.",
+            options: ["Play it some jazz.", "Throw it in the air.", "Give it dancing shoes."]
+        },
+        {
+            q: "What do you call a factory that makes okay products?",
+            a: "A satisfactory.",
+            options: ["Mediocre Inc.", "The Average Joe.", "Okay-ay-ay."]
+        },
+        {
+            q: "My grandfather has the heart of a lion.",
+            a: "And a lifetime ban from the zoo.",
+            options: ["He is very brave.", "He runs very fast.", "He roars in his sleep."]
+        },
+        {
+            q: "What did the janitor say when he jumped out of the closet?",
+            a: "Supplies!",
+            options: ["Boo!", "Gotcha!", "Clean up!"]
+        },
+        {
+            q: "Why do seagulls fly over the ocean?",
+            a: "Because if they flew over the bay, they’d be bagels.",
+            options: ["They like fish.", "The city is too loud.", "They can't swim."]
+        },
+        {
+            q: "\"I'm sorry\" and \"I apologize\" mean the same thing.",
+            a: "Except at a funeral.",
+            options: ["To a lawyer.", "In a dictionary.", "When you're late."],
+        },
+        // BATCH 2 JOKES (NEW ADDITIONS)
+        {
+            q: "Why did the picture go to jail?",
+            a: "Because it was framed.",
+            options: ["It stole a camera.", "It was hung.", "It shot a selfie."]
+        },
+        {
+            q: "Why can't orphans play baseball?",
+            a: "They don't know where home is.",
+            options: ["They can't afford bats.", "The umpire was mean.", "Field of dreams is closed."]
+        },
+        {
+            q: "What do you call a man with a rubber toe?",
+            a: "Roberto.",
+            options: ["Bouncy Bob.", "Toeny.", "Flex."]
+        },
+        {
+            q: "How do you surprise a blind man?",
+            a: "Leave the plunger in the toilet.",
+            options: ["Turn on the lights.", "Rearrange the furniture.", "Wear perfume."]
+        },
+        {
+            q: "I tell dad jokes...",
+            a: "Sometimes he laughs.",
+            options: ["But I'm not a dad.", "They are terrible.", "My kids hate them."]
+        },
+        {
+            q: "Never break someone's heart, they only have one.",
+            a: "Break their bones instead, they have 206.",
+            options: ["Break up via text.", "Love is fragile.", "Just be friends."]
+        },
+        {
+            q: "What do you call a fish wearing a bowtie?",
+            a: "Sofishticated.",
+            options: ["Formal Fish.", "Dressed to krill.", "Mr. Bubbles."]
+        },
+        {
+            q: "I used to hate facial hair.",
+            a: "But then it grew on me.",
+            options: ["So I shaved.", "It was too itchy.", "My wife made me keep it."]
+        },
+        {
+            q: "What did the buffalo say to his son when he left for college?",
+            a: "Bison.",
+            options: ["Mooo.", "Don't forget to write.", "Study hard."]
+        },
+        {
+            q: "What's the difference between a Ferrari and a pile of dead bodies?",
+            a: "I don't have a Ferrari in my garage.",
+            options: ["One is red.", "Ferraris are fast.", "One smells better."]
         }
     ];
 
@@ -439,7 +546,9 @@
         resultCard.classList.remove('hidden');
         resultCard.classList.add('flex');
 
+        const totalQuestions = shuffledQuestions.length;
         document.getElementById('final-score').innerText = score;
+        document.getElementById('total-score-display').innerText = totalQuestions;
         
         // Trigger Door Animation after a moment
         setTimeout(() => {
@@ -448,12 +557,16 @@
 
         // Generate Message
         const msgBox = document.getElementById('score-message');
-        if (score === 20) {
+        
+        // Dynamic percentages
+        const ratio = score / totalQuestions;
+
+        if (ratio === 1) { // 100%
             msgBox.innerText = "The ultimate Dad. Your jokes are terrible. Good job.";
             startConfetti();
-        } else if (score > 15) {
+        } else if (ratio >= 0.75) { // 75% +
             msgBox.innerText = "Solid effort, sport. You've definitely groaned at a few of these before.";
-        } else if (score > 10) {
+        } else if (ratio >= 0.5) { // 50% +
             msgBox.innerText = "Not bad, but you might need to check your pun-alignment.";
         } else {
             msgBox.innerText = "Are you sure you're winning? That score says otherwise.";
