@@ -2,539 +2,486 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Happy Thanksgiving: Turkey Toss!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ultimate Dad Joke Quiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Nunito:wght@400;700&display=swap');
+
         body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            height: 100vh;
             margin: 0;
-            overflow: hidden;
-            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none; /* Prevent scrolling on mobile */
-        }
-        #gameCanvas {
-            display: block;
-        }
-        .ui-layer {
-            position: absolute;
-            pointer-events: none;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
+            overflow: hidden; /* Prevent scroll on mobile */
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-            box-sizing: border-box;
+            align-items: center;
+            justify-content: center;
         }
-        .interactive {
-            pointer-events: auto;
+
+        h1, h2, h3 {
+            font-family: 'Fredoka', sans-serif;
         }
-        /* Custom animations */
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        .pulse-anim {
-            animation: pulse 2s infinite;
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
         }
-        .hidden {
-            display: none !important;
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+        .option-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Custom scrollbar for question text if it gets too long on small screens */
+        .scroll-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scroll-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1); 
+        }
+        .scroll-content::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3); 
+            border-radius: 10px;
+        }
+
+        /* Confetti Animation */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f0f;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(720deg); }
+        }
+
+        /* Winning Son Door Animation */
+        .door-container {
+            perspective: 1000px;
+        }
+        .door {
+            transform-origin: left;
+            transition: transform 1s ease-in-out;
+        }
+        .door-open {
+            transform: rotateY(-120deg);
         }
     </style>
 </head>
 <body>
 
-    <!-- Canvas Layer -->
-    <canvas id="gameCanvas"></canvas>
-
-    <!-- UI Overlay Layer -->
-    <div class="ui-layer">
+    <!-- Main Container -->
+    <div class="relative w-full max-w-md px-4">
         
-        <!-- Header / Score -->
-        <div class="flex justify-between items-start">
-            <div class="bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-lg border-2 border-orange-300">
-                <h1 class="text-2xl font-bold text-orange-800 m-0 leading-none">🦃 Turkey Toss</h1>
-                <p class="text-sm text-gray-600 mt-1">Distance: <span id="scoreDisplay" class="font-mono font-bold text-lg text-orange-600">0</span> ft</p>
-                <p class="text-xs text-gray-500">Best: <span id="highScoreDisplay" class="font-mono">0</span> ft</p>
-            </div>
+        <!-- Quiz Card -->
+        <div id="quiz-card" class="glass-card w-full p-6 min-h-[500px] flex flex-col justify-between relative overflow-hidden">
             
-            <div id="tutorial" class="bg-black/60 text-white p-3 rounded-lg text-sm max-w-[200px] text-right">
-                Aim with mouse/touch.<br>
-                <strong>Hold & Release</strong> to Fire!
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg">
+                        <i class="fas fa-laugh-squint"></i>
+                    </div>
+                    <span class="text-white font-bold text-lg drop-shadow-md">Dad Joke Central</span>
+                </div>
+                <div class="text-white/80 text-sm font-mono bg-black/10 px-3 py-1 rounded-full border border-white/20">
+                    <span id="current-q-num">1</span> / <span id="total-q-num">20</span>
+                </div>
             </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-black/10 h-2 rounded-full mb-6 overflow-hidden">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-yellow-300 to-pink-500 transition-all duration-500 ease-out" style="width: 5%"></div>
+            </div>
+
+            <!-- Question Area -->
+            <div class="flex-grow flex items-center justify-center mb-8 scroll-content overflow-y-auto max-h-40">
+                <h2 id="question-text" class="text-2xl md:text-3xl font-bold text-white text-center leading-tight drop-shadow-sm">
+                    Loading joke...
+                </h2>
+            </div>
+
+            <!-- Options Grid -->
+            <div id="options-grid" class="grid grid-cols-1 gap-3">
+                <!-- Buttons injected by JS -->
+            </div>
+
+            <!-- Feedback Overlay (Hidden by default) -->
+            <div id="feedback-overlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-10 rounded-20px">
+                <div class="transform scale-50 transition-transform duration-300" id="feedback-content">
+                    <div class="bg-white text-gray-800 px-8 py-6 rounded-2xl shadow-2xl text-center">
+                        <i id="feedback-icon" class="text-5xl mb-3 block"></i>
+                        <h3 id="feedback-text" class="text-2xl font-bold"></h3>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Game Over Modal -->
-        <div id="gameOverScreen" class="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden interactive z-50">
-            <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-md w-full border-4 border-orange-500 transform scale-100 transition-transform">
-                <div class="text-6xl mb-4">🍗</div>
-                <h2 class="text-4xl font-black text-orange-800 mb-2">DINNER IS SERVED!</h2>
-                <p class="text-gray-600 mb-6 text-lg">You traveled <span id="finalScore" class="font-bold text-orange-600">0</span> feet.</p>
-                
-                <div class="bg-orange-100 p-4 rounded-lg mb-6 text-left">
-                    <p class="font-serif italic text-orange-900">"Happy Thanksgiving from the Fergs! Hope it is overflowing with food, laughter, and bouncing turkeys."</p>
+        <!-- Result Card (Hidden Initially) -->
+        <div id="result-card" class="glass-card w-full p-6 hidden flex-col items-center text-center animate-fade-in">
+            
+            <h1 class="text-4xl font-black text-white mb-2 drop-shadow-md">GAME OVER</h1>
+            
+            <!-- "Are Ya Winning Son?" Visual -->
+            <div class="door-container w-48 h-48 bg-gray-800 rounded-lg border-4 border-gray-700 relative mb-6 overflow-hidden shadow-2xl mt-4 group cursor-pointer" onclick="this.querySelector('.door').classList.toggle('door-open')">
+                <!-- Inside the room (Dad) -->
+                <div class="absolute inset-0 flex items-center justify-center bg-yellow-100">
+                    <div class="text-center">
+                        <!-- Simple SVG Stick Figure Dad -->
+                        <svg width="100" height="120" viewBox="0 0 100 120" class="mx-auto">
+                            <circle cx="50" cy="20" r="15" fill="black" /> <!-- Head -->
+                            <line x1="50" y1="35" x2="50" y2="80" stroke="black" stroke-width="4" /> <!-- Body -->
+                            <line x1="50" y1="45" x2="20" y2="65" stroke="black" stroke-width="4" /> <!-- Arm L -->
+                            <line x1="50" y1="45" x2="80" y2="25" stroke="black" stroke-width="4" /> <!-- Arm R (Waving) -->
+                            <line x1="50" y1="80" x2="30" y2="110" stroke="black" stroke-width="4" /> <!-- Leg L -->
+                            <line x1="50" y1="80" x2="70" y2="110" stroke="black" stroke-width="4" /> <!-- Leg R -->
+                            <rect x="40" y="5" width="20" height="10" fill="gray" /> <!-- Hat -->
+                        </svg>
+                        <p class="font-bold text-gray-800 text-sm mt-1">DAD</p>
+                    </div>
                 </div>
-
-                <button onclick="resetGame()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-4 px-6 rounded-xl text-xl shadow-lg transform transition active:scale-95">
-                    Launch Again! 🚀
-                </button>
+                <!-- The Door -->
+                <div class="door absolute inset-0 bg-amber-800 border-r-4 border-amber-900 flex items-center">
+                    <div class="w-3 h-3 rounded-full bg-yellow-400 ml-4 shadow-sm border border-yellow-600"></div>
+                </div>
             </div>
+
+            <h2 class="text-3xl font-bold text-yellow-300 mb-2 drop-shadow-sm">"Are ya winning, son?"</h2>
+            
+            <p class="text-white text-lg mb-6">
+                You scored: <span id="final-score" class="font-bold text-2xl text-green-300">0</span> / 20
+            </p>
+
+            <div id="score-message" class="bg-white/20 p-4 rounded-xl text-white italic mb-6 text-sm border border-white/10">
+                <!-- Dynamic insult/compliment -->
+            </div>
+
+            <button onclick="restartGame()" class="w-full bg-white text-purple-600 font-bold py-4 rounded-xl hover:bg-purple-50 transition transform active:scale-95 shadow-lg">
+                Play Again
+            </button>
         </div>
 
     </div>
 
 <script>
-/**
- * GAME CONFIGURATION & STATE
- */
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const scoreDisplay = document.getElementById('scoreDisplay');
-const highScoreDisplay = document.getElementById('highScoreDisplay');
-const gameOverScreen = document.getElementById('gameOverScreen');
-const finalScoreSpan = document.getElementById('finalScore');
-const tutorialBox = document.getElementById('tutorial');
+    /**
+     * DAD JOKE DATABASE
+     * A mix of classics, puns, and dark humor.
+     */
+    const jokes = [
+        {
+            q: "I'm afraid for the calendar.",
+            a: "Its days are numbered.",
+            options: ["It has no dates.", "It's stuck in the past.", "It's weak on weekends."]
+        },
+        {
+            q: "Why don't skeletons fight each other?",
+            a: "They don't have the guts.",
+            options: ["They have no bone to pick.", "They are too rattled.", "They lack the muscle."]
+        },
+        {
+            q: "My wife told me to stop impersonating a flamingo.",
+            a: "I had to put my foot down.",
+            options: ["I flew off the handle.", "I turned pink.", "I stood my ground."]
+        },
+        {
+            q: "What is red and bad for your teeth?",
+            a: "A brick.",
+            options: ["Red velvet cake.", "A mars bar.", "Cherry soda."]
+        },
+        {
+            q: "Why did the scarecrow win an award?",
+            a: "He was outstanding in his field.",
+            options: ["He had a lot of brains.", "He worked hard.", "He was straw-ng."]
+        },
+        {
+            q: "I bought some shoes from a drug dealer.",
+            a: "I don't know what he laced them with, but I've been tripping all day.",
+            options: ["They were high heels.", "They were addictive.", "They cost a fortune."]
+        },
+        {
+            q: "Why did the old man fall in the well?",
+            a: "Because he couldn't see that well.",
+            options: ["He slipped on a coin.", "He was looking for water.", "Gravity."]
+        },
+        {
+            q: "What do you call a fake noodle?",
+            a: "An Impasta.",
+            options: ["A phon-oodle.", "Fettuccini Lies.", "Artificialente."]
+        },
+        {
+            q: "I have a joke about construction...",
+            a: "But I'm still working on it.",
+            options: ["It's groundbreaking.", "It's concrete.", "It needs more support."]
+        },
+        {
+            q: "Why can't you hear a pterodactyl go to the bathroom?",
+            a: "Because the 'P' is silent.",
+            options: ["They are extinct.", "They use the sky.", "They are very polite."]
+        },
+        {
+            q: "What's the difference between a hippo and a Zippo?",
+            a: "One is heavy, the other is a little lighter.",
+            options: ["One swims, one burns.", "One eats grass, one eats gas.", "About 2000 pounds."]
+        },
+        {
+            q: "Why do we tell actors to 'break a leg'?",
+            a: "Because every play has a cast.",
+            options: ["So they get insurance.", "To wish them luck.", "Because theater is brutal."]
+        },
+        {
+            q: "Did you hear about the kidnapping at school?",
+            a: "It's fine, he woke up.",
+            options: ["The police are investigating.", "They paid the ransom.", "The teacher did it."]
+        },
+        {
+            q: "What constitutes a family in biology?",
+            a: "Wait, I think that's the wrong website.",
+            options: ["Genes and chromosomes.", "Parents and offspring.", "Related organisms."]
+        },
+        {
+            q: "Parallel lines have so much in common.",
+            a: "It’s a shame they’ll never meet.",
+            options: ["They are identical.", "They go the same way.", "They are straight."]
+        },
+        {
+            q: "My wife is really mad at the fact that I have no sense of direction.",
+            a: "So I packed up my stuff and right.",
+            options: ["I left the house.", "I got lost immediately.", "I bought a GPS."]
+        },
+        {
+            q: "Why don't scientists trust atoms?",
+            a: "Because they make up everything.",
+            options: ["They are unstable.", "They are too small.", "They split too easily."]
+        },
+        {
+            q: "I visited the new cemetery today.",
+            a: "People are dying to get in there.",
+            options: ["It was dead silent.", "It was a grave mistake.", "The service was buried."]
+        },
+        {
+            q: "What did the ocean say to the beach?",
+            a: "Nothing, it just waved.",
+            options: ["See you later.", "Shore looks nice.", "I'm tide of you."]
+        },
+        {
+            q: "My grief counselor died the other day.",
+            a: "He was so good, I didn't even care.",
+            options: ["I was devastated.", "I need a new one.", "It was tragic."]
+        }
+    ];
 
-// Game Constants
-const GRAVITY = 0.4;
-const FRICTION = 0.995; // Even less air resistance for better momentum (was 0.99)
-const GROUND_FRICTION = 0.94; // Slide further on ground (was 0.9)
-const BOUNCE_DAMPENING = 0.75; 
-const CANNON_BASE_X = 100;
-const CANNON_BASE_Y_OFFSET = 100; // From bottom
+    /**
+     * STATE MANAGEMENT
+     */
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let shuffledQuestions = [];
 
-// Game State
-let gameState = 'AIMING'; // AIMING, CHARGING, FLYING, ENDED
-let power = 0;
-let maxPower = 35;
-let angle = 0;
-let distance = 0;
-let highScore = 0;
-let cameraOffset = 0;
-let frameId;
-let particles = [];
+    // DOM Elements
+    const quizCard = document.getElementById('quiz-card');
+    const resultCard = document.getElementById('result-card');
+    const questionText = document.getElementById('question-text');
+    const optionsGrid = document.getElementById('options-grid');
+    const currentQNum = document.getElementById('current-q-num');
+    const totalQNum = document.getElementById('total-q-num');
+    const progressBar = document.getElementById('progress-bar');
+    const feedbackOverlay = document.getElementById('feedback-overlay');
+    const feedbackContent = document.getElementById('feedback-content');
+    const feedbackIcon = document.getElementById('feedback-icon');
+    const feedbackText = document.getElementById('feedback-text');
 
-// Input State
-let mouseX = 0;
-let mouseY = 0;
-let isMouseDown = false;
-
-// Entities
-let turkey = {
-    x: 0, y: 0, vx: 0, vy: 0, r: 0, vr: 0, 
-    radius: 20, 
-    state: 'ALIVE', // ALIVE, ROASTED
-    onGround: false
-};
-
-let obstacles = [];
-
-/**
- * INITIALIZATION
- */
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-resize();
-
-function init() {
-    // Reset Turkey
-    turkey.x = CANNON_BASE_X;
-    turkey.y = canvas.height - CANNON_BASE_Y_OFFSET;
-    turkey.vx = 0;
-    turkey.vy = 0;
-    turkey.r = 0;
-    turkey.vr = 0;
-    turkey.state = 'ALIVE';
-    turkey.onGround = false;
-
-    // Reset World
-    cameraOffset = 0;
-    power = 0;
-    gameState = 'AIMING';
-    obstacles = [];
-    particles = [];
-    generateObstacles(0, 2000); // Initial chunk
-
-    // UI
-    gameOverScreen.classList.add('hidden');
-    tutorialBox.classList.remove('hidden');
-    scoreDisplay.innerText = "0";
-    
-    // Start Loop if not running
-    if (!frameId) loop();
-}
-
-/**
- * INPUT HANDLING
- */
-function getPointerPos(e) {
-    if (e.touches) {
-        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    /**
+     * UTILS
+     */
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
-    return { x: e.clientX, y: e.clientY };
-}
 
-function handleStart(e) {
-    if (gameState === 'AIMING' || gameState === 'CHARGING') {
-        isMouseDown = true;
-        gameState = 'CHARGING';
-        const pos = getPointerPos(e);
-        mouseX = pos.x;
-        mouseY = pos.y;
-    }
-}
-
-function handleMove(e) {
-    const pos = getPointerPos(e);
-    mouseX = pos.x;
-    mouseY = pos.y;
-    
-    if (gameState === 'AIMING' || gameState === 'CHARGING') {
-        // Calculate angle based on mouse position relative to cannon
-        const dy = (canvas.height - CANNON_BASE_Y_OFFSET) - mouseY;
-        const dx = mouseX - CANNON_BASE_X;
-        angle = Math.atan2(dy, dx);
-        // Clamp angle
-        if (angle < 0) angle = 0;
-        if (angle > Math.PI / 2) angle = Math.PI / 2;
-    }
-}
-
-function handleEnd(e) {
-    if (gameState === 'CHARGING') {
-        fireCannon();
-    }
-    isMouseDown = false;
-}
-
-window.addEventListener('mousedown', handleStart);
-window.addEventListener('mousemove', handleMove);
-window.addEventListener('mouseup', handleEnd);
-window.addEventListener('touchstart', handleStart, {passive: false});
-window.addEventListener('touchmove', handleMove, {passive: false});
-window.addEventListener('touchend', handleEnd);
-
-/**
- * GAME LOGIC
- */
-function fireCannon() {
-    gameState = 'FLYING';
-    tutorialBox.classList.add('hidden');
-    
-    // Calculate velocity based on angle and power
-    const velocity = power * 1.8; 
-    turkey.vx = Math.cos(angle) * velocity;
-    turkey.vy = -Math.sin(angle) * velocity;
-    
-    // Add some spin
-    turkey.vr = (Math.random() - 0.5) * 0.5;
-
-    // Boom effect
-    createParticles(turkey.x, turkey.y, 20, '#555');
-}
-
-function generateObstacles(startX, endX) {
-    // Generate items between startX and endX
-    for (let x = startX; x < endX; x += Math.random() * 300 + 150) {
-        if (x < 400) continue; // Don't spawn too close to cannon
-
-        const typeRoll = Math.random();
-        let type = 'PIE';
+    /**
+     * GAME LOGIC
+     */
+    function initGame() {
+        score = 0;
+        currentQuestionIndex = 0;
         
-        if (typeRoll > 0.8) type = 'BOMB';
-        else if (typeRoll > 0.6) type = 'TABLE'; // Decreased chance (was > 0.5)
-        else type = 'PIE';
-
-        obstacles.push({
-            x: x,
-            y: canvas.height - 50, // Ground level approximation
-            type: type,
-            hit: false,
-            width: type === 'TABLE' ? 80 : 40,
-            height: 40
-        });
-    }
-}
-
-function createParticles(x, y, count, color) {
-    for (let i = 0; i < count; i++) {
-        particles.push({
-            x: x,
-            y: y,
-            vx: (Math.random() - 0.5) * 10,
-            vy: (Math.random() - 0.5) * 10,
-            life: 1.0,
-            color: color
-        });
-    }
-}
-
-function createFeathers(x, y) {
-    createParticles(x, y, 10, '#8B4513'); // Brown feathers
-    createParticles(x, y, 5, '#FFF');    // White feathers
-}
-
-function update() {
-    // 1. Charging Logic
-    if (gameState === 'CHARGING') {
-        power += 0.5;
-        if (power > maxPower) power = 0; // Cycle power
-    }
-
-    // 2. Physics Logic
-    if (gameState === 'FLYING') {
-        // Gravity
-        turkey.vy += GRAVITY;
+        // Deep copy and shuffle jokes
+        shuffledQuestions = jokes.map(j => ({...j})).sort(() => Math.random() - 0.5);
         
-        // Apply Velocities
-        turkey.x += turkey.vx;
-        turkey.y += turkey.vy;
-        turkey.r += turkey.vr;
+        // Update total count display
+        totalQNum.innerText = shuffledQuestions.length;
+        
+        // UI Reset
+        quizCard.classList.remove('hidden');
+        quizCard.classList.add('flex');
+        resultCard.classList.add('hidden');
+        resultCard.classList.remove('flex');
+        
+        loadQuestion();
+    }
 
-        // Air Resistance
-        turkey.vx *= FRICTION;
-        turkey.vy *= FRICTION;
-
-        // Ground Collision
-        const groundY = canvas.height - 50;
-        if (turkey.y + turkey.radius > groundY) {
-            turkey.y = groundY - turkey.radius;
-            turkey.vy *= -BOUNCE_DAMPENING;
-            turkey.vx *= GROUND_FRICTION;
-            turkey.vr *= GROUND_FRICTION;
-            
-            // Stop if too slow
-            if (Math.abs(turkey.vx) < 0.1 && Math.abs(turkey.vy) < 0.5) {
-                endGame(false);
-            }
+    function loadQuestion() {
+        if (currentQuestionIndex >= shuffledQuestions.length) {
+            endGame();
+            return;
         }
 
-        // Object Collision
-        obstacles.forEach(obj => {
-            if (obj.hit) return;
+        const qData = shuffledQuestions[currentQuestionIndex];
+        
+        // Update UI Text
+        currentQNum.innerText = currentQuestionIndex + 1;
+        questionText.innerText = qData.q;
+        
+        // Update Progress Bar
+        const progress = ((currentQuestionIndex) / shuffledQuestions.length) * 100;
+        progressBar.style.width = `${progress}%`;
 
-            // Simple box collision
-            if (turkey.x + turkey.radius > obj.x && 
-                turkey.x - turkey.radius < obj.x + obj.width &&
-                turkey.y + turkey.radius > obj.y - obj.height) {
-                
-                if (obj.type === 'PIE') {
-                    // Trampoline effect
-                    turkey.vy = -18; // Big bounce
-                    turkey.vx += 2; // Speed boost
-                    createParticles(turkey.x, turkey.y, 10, '#FFA500'); // Orange filling
-                    obj.hit = true; // Use up the pie
-                } 
-                else if (obj.type === 'BOMB') {
-                    // Explosion
-                    turkey.vy = -25;
-                    turkey.vx += 10;
-                    createParticles(turkey.x, turkey.y, 30, '#FF0000');
-                    obj.hit = true;
-                } 
-                else if (obj.type === 'TABLE') {
-                    // Game Over trap
-                    turkey.vx = 0;
-                    turkey.vy = 0;
-                    turkey.y = obj.y - obj.height - turkey.radius + 15; // Sit on plate
-                    endGame(true);
-                }
+        // Prepare Answers
+        const allOptions = [
+            { text: qData.a, isCorrect: true },
+            { text: qData.options[0], isCorrect: false },
+            { text: qData.options[1], isCorrect: false },
+            { text: qData.options[2], isCorrect: false }
+        ];
+
+        // Shuffle Answers
+        shuffleArray(allOptions);
+
+        // Render Buttons
+        optionsGrid.innerHTML = '';
+        allOptions.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = `option-btn w-full bg-white text-gray-800 font-semibold py-4 px-4 rounded-xl shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-white/50 text-sm md:text-base`;
+            btn.innerText = opt.text;
+            btn.dataset.isCorrect = opt.isCorrect; 
+            btn.onclick = (e) => handleAnswer(opt.isCorrect, e.target);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function handleAnswer(isCorrect, clickedBtn) {
+        // Disable all buttons and highlight correct answer
+        const btns = document.querySelectorAll('.option-btn');
+        btns.forEach(b => {
+            b.disabled = true;
+            // Always highlight correct answer in green
+            if (b.dataset.isCorrect === 'true') {
+                 b.classList.remove('bg-white', 'text-gray-800', 'hover:bg-gray-50');
+                 b.classList.add('bg-green-500', 'text-white', 'shadow-green-500/50');
             }
         });
 
-        // Generate more terrain as we fly
-        const rightEdge = turkey.x + canvas.width;
-        const lastObstacle = obstacles[obstacles.length - 1];
-        if (lastObstacle && lastObstacle.x < rightEdge) {
-            generateObstacles(lastObstacle.x, rightEdge + 2000);
+        if (isCorrect) {
+            score++;
+            showFeedback(true);
+        } else {
+            showFeedback(false);
+            // Highlight the clicked wrong answer in red
+            clickedBtn.classList.remove('bg-white', 'text-gray-800', 'hover:bg-gray-50');
+            clickedBtn.classList.add('bg-red-500', 'text-white');
         }
 
-        // Camera Follow
-        if (turkey.x > CANNON_BASE_X + canvas.width / 4) {
-            cameraOffset = turkey.x - (CANNON_BASE_X + canvas.width / 4);
+        setTimeout(() => {
+            currentQuestionIndex++;
+            loadQuestion();
+        }, 2000); // 2 second delay to see the result
+    }
+
+    function showFeedback(isCorrect) {
+        feedbackOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        feedbackContent.classList.remove('scale-50');
+        feedbackContent.classList.add('scale-100');
+
+        if (isCorrect) {
+            feedbackIcon.className = "fas fa-check-circle text-green-500 text-5xl mb-3 block";
+            feedbackText.innerText = "Nice!";
+            feedbackText.className = "text-2xl font-bold text-green-600";
+        } else {
+            feedbackIcon.className = "fas fa-times-circle text-red-500 text-5xl mb-3 block";
+            feedbackText.innerText = "Nope!";
+            feedbackText.className = "text-2xl font-bold text-red-600";
         }
 
-        // Update Distance
-        distance = Math.floor(turkey.x / 10);
-        scoreDisplay.innerText = distance;
+        // Hide after 1.5s (slightly shorter than total wait time)
+        setTimeout(() => {
+            feedbackOverlay.classList.add('opacity-0', 'pointer-events-none');
+            feedbackContent.classList.add('scale-50');
+            feedbackContent.classList.remove('scale-100');
+        }, 1500);
     }
 
-    // 3. Particle System
-    for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += GRAVITY * 0.5;
-        p.life -= 0.02;
-        if (p.life <= 0) particles.splice(i, 1);
-    }
-}
+    function endGame() {
+        quizCard.classList.add('hidden');
+        quizCard.classList.remove('flex');
+        resultCard.classList.remove('hidden');
+        resultCard.classList.add('flex');
 
-function endGame(isRoasted) {
-    gameState = 'ENDED';
-    turkey.state = isRoasted ? 'ROASTED' : 'ALIVE';
-    
-    // Update High Score
-    if (distance > highScore) {
-        highScore = distance;
-        highScoreDisplay.innerText = highScore;
-    }
-
-    finalScoreSpan.innerText = distance;
-    setTimeout(() => {
-        gameOverScreen.classList.remove('hidden');
-    }, 500);
-}
-
-function resetGame() {
-    init();
-}
-
-/**
- * RENDERING
- */
-function draw() {
-    // Clear
-    ctx.fillStyle = '#87CEEB'; // Sky blue fallback
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw Background Gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#87CEEB'); // Sky
-    gradient.addColorStop(1, '#FFF3E0'); // Horizon
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw Sun
-    ctx.fillStyle = '#FFD700';
-    ctx.beginPath();
-    ctx.arc(canvas.width - 100, 100, 50, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.save();
-    
-    // Apply Camera translation
-    ctx.translate(-cameraOffset, 0);
-
-    // Draw Ground
-    ctx.fillStyle = '#558B2F'; // Grass green
-    ctx.fillRect(cameraOffset, canvas.height - 50, canvas.width, 500); // Infinite appearing
-    ctx.fillStyle = '#33691E'; // Top border
-    ctx.fillRect(cameraOffset, canvas.height - 50, canvas.width, 10);
-
-    // Draw Distance Markers (Every 100 ft)
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '20px Arial';
-    const startMarker = Math.floor(cameraOffset / 1000) * 1000;
-    for(let m = startMarker; m < cameraOffset + canvas.width; m += 500) {
-        if (m === 0) continue;
-        ctx.fillText(`${Math.floor(m/10)}ft`, m, canvas.height - 60);
-        ctx.fillRect(m, canvas.height - 50, 2, 20);
-    }
-
-    // Draw Obstacles
-    obstacles.forEach(obj => {
-        if (obj.hit && obj.type !== 'TABLE') return; // Don't draw consumed items
-
-        const y = obj.y - obj.height;
+        document.getElementById('final-score').innerText = score;
         
-        if (obj.type === 'PIE') {
-            // Draw Pie
-            ctx.font = '40px Arial';
-            ctx.fillText('🥧', obj.x, obj.y);
-        } else if (obj.type === 'BOMB') {
-            // Draw Bomb
-            ctx.font = '40px Arial';
-            ctx.fillText('💣', obj.x, obj.y);
-        } else if (obj.type === 'TABLE') {
-            // Draw Table
-            ctx.font = '60px Arial';
-            ctx.fillText('🍽️', obj.x - 10, obj.y + 10);
+        // Trigger Door Animation after a moment
+        setTimeout(() => {
+            document.querySelector('.door').classList.add('door-open');
+        }, 800);
+
+        // Generate Message
+        const msgBox = document.getElementById('score-message');
+        if (score === 20) {
+            msgBox.innerText = "The ultimate Dad. Your jokes are terrible. Good job.";
+            startConfetti();
+        } else if (score > 15) {
+            msgBox.innerText = "Solid effort, sport. You've definitely groaned at a few of these before.";
+        } else if (score > 10) {
+            msgBox.innerText = "Not bad, but you might need to check your pun-alignment.";
+        } else {
+            msgBox.innerText = "Are you sure you're winning? That score says otherwise.";
         }
-    });
+    }
 
-    // Draw Cannon (Only if near start)
-    if (cameraOffset < 500) {
-        ctx.save();
-        ctx.translate(CANNON_BASE_X, canvas.height - CANNON_BASE_Y_OFFSET);
-        
-        // Draw Mount
-        ctx.fillStyle = '#4a4a4a';
-        ctx.beginPath();
-        ctx.arc(0, 0, 30, 0, Math.PI * 2);
-        ctx.fill();
+    function restartGame() {
+        initGame();
+        // Close door for next time
+        document.querySelector('.door').classList.remove('door-open');
+    }
 
-        // Draw Barrel
-        ctx.rotate(-angle);
-        ctx.fillStyle = '#333';
-        ctx.fillRect(0, -20, 100, 40);
-        
-        // Barrel Rings
-        ctx.fillStyle = '#Gold';
-        ctx.fillRect(90, -22, 10, 44);
-
-        ctx.restore();
-
-        // Draw Power Meter next to cannon
-        if (gameState === 'CHARGING' || gameState === 'AIMING') {
-            ctx.fillStyle = 'white';
-            ctx.fillRect(CANNON_BASE_X - 50, canvas.height - CANNON_BASE_Y_OFFSET - 100, 10, 80);
+    function startConfetti() {
+        for(let i=0; i<50; i++) {
+            const confetti = document.createElement('div');
+            confetti.classList.add('confetti');
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+            confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            document.body.appendChild(confetti);
             
-            // Fill based on power
-            const powerPercent = power / maxPower;
-            const powerColor = powerPercent > 0.8 ? 'red' : (powerPercent > 0.5 ? 'orange' : 'green');
-            ctx.fillStyle = powerColor;
-            const h = 80 * powerPercent;
-            ctx.fillRect(CANNON_BASE_X - 50, canvas.height - CANNON_BASE_Y_OFFSET - 20 - h, 10, h);
+            // Cleanup
+            setTimeout(() => confetti.remove(), 5000);
         }
     }
 
-    // Draw Turkey
-    ctx.save();
-    ctx.translate(turkey.x, turkey.y);
-    ctx.rotate(turkey.r);
-    ctx.font = '40px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    if (turkey.state === 'ROASTED') {
-        ctx.fillText('🍗', 0, 0);
-    } else {
-        // Switch sprite based on velocity to look like it's tumbling
-        ctx.fillText('🦃', 0, 0);
-    }
-    ctx.restore();
-
-    // Draw Particles
-    particles.forEach(p => {
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-    });
-
-    ctx.restore();
-}
-
-/**
- * MAIN LOOP
- */
-function loop() {
-    update();
-    draw();
-    frameId = requestAnimationFrame(loop);
-}
-
-// Start Game
-init();
+    // Start
+    initGame();
 
 </script>
 </body>
