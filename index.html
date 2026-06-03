@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Congratulations, C/2d Lt Aliyah</title>
+<meta name="description" content="Celebrating Aliyah's promotion to Cadet Second Lieutenant and the General Billy Mitchell Award." />
+
+<!-- Distinctive type: condensed military-poster display + clean geometric body -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --navy-0:#060b1c;
+    --navy-1:#0a1530;
+    --navy-2:#0f1d42;
+    --ink:#eef3fb;
+    --ink-soft:#aeb9d4;
+    --ink-faint:#7e8bac;
+    --gold:#e6bd5c;
+    --gold-bright:#f5d98a;
+    --silver:#cdd8ea;
+    --red:#d4243d;
+    --blue:#3a72c4;
+    --line:rgba(205,216,234,.14);
+    --card:rgba(255,255,255,.035);
+    --card-edge:rgba(205,216,234,.12);
+    --maxw:1080px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Sora',system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--navy-0);
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Night-sky atmosphere ---------- */
+  .sky{
+    position:fixed; inset:0; z-index:-3;
+    background:
+      radial-gradient(1200px 700px at 50% -8%, rgba(58,114,196,.28), transparent 60%),
+      radial-gradient(900px 600px at 88% 12%, rgba(230,189,92,.10), transparent 55%),
+      radial-gradient(800px 700px at 8% 30%, rgba(212,36,61,.10), transparent 55%),
+      linear-gradient(180deg, var(--navy-1) 0%, var(--navy-0) 55%, #04060f 100%);
+  }
+  .stars,.stars2{
+    position:fixed; inset:-50% 0 0 0; z-index:-2;
+    background-repeat:repeat;
+    pointer-events:none;
+  }
+  .stars{
+    background-image:
+      radial-gradient(1.4px 1.4px at 20px 30px, rgba(255,255,255,.9), transparent),
+      radial-gradient(1.2px 1.2px at 130px 80px, rgba(255,255,255,.7), transparent),
+      radial-gradient(1.6px 1.6px at 220px 160px, rgba(255,255,255,.85), transparent),
+      radial-gradient(1px 1px at 300px 50px, rgba(255,255,255,.6), transparent),
+      radial-gradient(1.3px 1.3px at 380px 220px, rgba(255,255,255,.75), transparent);
+    background-size:420px 320px;
+    animation:twinkle 6s ease-in-out infinite;
+  }
+  .stars2{
+    background-image:
+      radial-gradient(1px 1px at 60px 120px, rgba(230,189,92,.7), transparent),
+      radial-gradient(1.2px 1.2px at 200px 40px, rgba(255,255,255,.55), transparent),
+      radial-gradient(1px 1px at 340px 180px, rgba(58,114,196,.8), transparent);
+    background-size:380px 280px;
+    opacity:.7;
+    animation:twinkle 9s ease-in-out infinite reverse;
+  }
+  @keyframes twinkle{0%,100%{opacity:.55}50%{opacity:1}}
+
+  #confetti{position:fixed; inset:0; z-index:60; pointer-events:none;}
+
+  /* ---------- Layout ---------- */
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 22px;}
+  section{position:relative;}
+
+  .eyebrow{
+    font-family:'Sora',sans-serif;
+    font-weight:600; letter-spacing:.32em; text-transform:uppercase;
+    font-size:clamp(.62rem,1.6vw,.78rem); color:var(--gold);
+  }
+  .display{
+    font-family:'Big Shoulders Display',sans-serif;
+    line-height:.92; letter-spacing:.01em; text-transform:uppercase;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{padding:clamp(54px,11vh,120px) 0 clamp(40px,7vh,72px);}
+  .emblem{width:84px; height:84px; margin:0 auto 26px; display:block; filter:drop-shadow(0 6px 22px rgba(58,114,196,.5));}
+  .hero .eyebrow{text-align:center; display:block;}
+  .hero h1{
+    text-align:center;
+    font-weight:900;
+    font-size:clamp(3.2rem,14vw,8.5rem);
+    margin:.18em 0 .04em;
+    background:linear-gradient(180deg,#ffffff 0%, #dfe8fb 45%, var(--gold) 130%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 50px rgba(230,189,92,.18);
+  }
+  .hero .rankline{
+    text-align:center;
+    font-family:'Big Shoulders Display',sans-serif;
+    font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+    font-size:clamp(1.15rem,4.2vw,2.1rem);
+    color:var(--silver);
+  }
+  .hero .name{
+    text-align:center;
+    font-family:'Big Shoulders Display',sans-serif;
+    font-weight:800;
+    font-size:clamp(2.2rem,9vw,4.6rem);
+    color:var(--gold-bright);
+    letter-spacing:.02em;
+    margin-top:.05em;
+    text-shadow:0 4px 30px rgba(230,189,92,.25);
+  }
+  .hero .sub{
+    text-align:center; color:var(--ink-soft);
+    max-width:46ch; margin:18px auto 0; font-size:clamp(.95rem,2.4vw,1.08rem);
+  }
+  .ribbon{
+    display:flex; gap:0; width:min(320px,70%); height:6px; margin:30px auto 0;
+    border-radius:6px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,.4);
+  }
+  .ribbon span{flex:1;}
+  .ribbon .r{background:var(--red);} .ribbon .w{background:#f4f7ff;} .ribbon .b{background:var(--blue);}
+
+  /* Hero photo */
+  .hero-photo-wrap{margin:clamp(36px,6vh,60px) auto 0; max-width:430px; position:relative;}
+  .hero-photo{
+    width:100%; display:block; border-radius:18px;
+    border:1px solid rgba(230,189,92,.45);
+    box-shadow:0 30px 70px rgba(0,0,0,.55), 0 0 0 6px rgba(255,255,255,.02);
+  }
+  .hero-photo-wrap::after{
+    content:""; position:absolute; inset:-2px; border-radius:20px; pointer-events:none;
+    background:linear-gradient(135deg, rgba(230,189,92,.5), transparent 40%, transparent 60%, rgba(58,114,196,.5));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; padding:2px;
+    opacity:.7;
+  }
+  .photo-cap{text-align:center; color:var(--ink-faint); font-size:.82rem; margin-top:14px; letter-spacing:.04em;}
+
+  /* ---------- Section heads ---------- */
+  .sec{padding:clamp(48px,8vh,90px) 0;}
+  .sec-head{margin-bottom:clamp(28px,4vh,46px);}
+  .sec-head .eyebrow{display:block; margin-bottom:10px;}
+  .sec-head h2{
+    font-family:'Big Shoulders Display',sans-serif; font-weight:800; text-transform:uppercase;
+    font-size:clamp(2rem,7vw,3.6rem); line-height:.95; color:var(--ink);
+  }
+  .sec-head p{color:var(--ink-soft); max-width:60ch; margin-top:14px;}
+
+  /* ---------- Rank reveal ---------- */
+  .rank-grid{display:grid; grid-template-columns:1.15fr .85fr; gap:30px; align-items:center;}
+  .insignia-card,.medal-card{
+    background:var(--card); border:1px solid var(--card-edge); border-radius:16px;
+    padding:26px; position:relative; overflow:hidden;
+  }
+  .insignia-card img,.medal-card img{width:100%; display:block; border-radius:10px;}
+  .insignia-card{display:flex; flex-direction:column; gap:18px;}
+  .card-label{
+    font-family:'Big Shoulders Display',sans-serif; text-transform:uppercase; letter-spacing:.06em;
+    font-weight:700; color:var(--gold); font-size:1.05rem;
+  }
+  .card-note{color:var(--ink-soft); font-size:.92rem;}
+  .medal-card{text-align:center; background:linear-gradient(180deg, rgba(230,189,92,.10), rgba(255,255,255,.02));}
+  .medal-card .award-name{
+    font-family:'Big Shoulders Display',sans-serif; font-weight:800; text-transform:uppercase;
+    font-size:1.5rem; margin-top:8px; color:var(--ink);
+  }
+  /* shine sweep */
+  .shine::before{
+    content:""; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(105deg, transparent, rgba(255,255,255,.22), transparent);
+    transform:skewX(-18deg); animation:sweep 5.5s ease-in-out infinite; pointer-events:none;
+  }
+  @keyframes sweep{0%,72%{left:-60%}100%{left:130%}}
+
+  /* ---------- Timeline ---------- */
+  .timeline{position:relative; margin-top:10px; padding-left:8px;}
+  .timeline::before{
+    content:""; position:absolute; left:14px; top:6px; bottom:6px; width:2px;
+    background:linear-gradient(180deg, var(--blue), var(--gold));
+    opacity:.55;
+  }
+  .t-item{position:relative; padding:0 0 30px 52px;}
+  .t-item:last-child{padding-bottom:0;}
+  .t-dot{
+    position:absolute; left:5px; top:3px; width:20px; height:20px; border-radius:50%;
+    background:var(--navy-2); border:2px solid var(--gold);
+    box-shadow:0 0 0 4px rgba(230,189,92,.12);
+  }
+  .t-item.cap .t-dot{border-color:var(--gold-bright); background:var(--gold); box-shadow:0 0 18px rgba(230,189,92,.7);}
+  .t-grade{
+    font-family:'Big Shoulders Display',sans-serif; text-transform:uppercase; letter-spacing:.05em;
+    font-weight:700; font-size:1.18rem; color:var(--ink);
+  }
+  .t-item.cap .t-grade{color:var(--gold-bright);}
+  .t-body{color:var(--ink-soft); font-size:.95rem; margin-top:3px;}
+  .t-tag{
+    display:inline-block; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--blue); font-weight:600; margin-bottom:4px;
+  }
+  .t-item.cap .t-tag{color:var(--gold);}
+
+  /* ---------- Requirement cards ---------- */
+  .req-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+  .req{
+    background:var(--card); border:1px solid var(--card-edge); border-radius:14px;
+    padding:24px 22px; transition:transform .35s cubic-bezier(.2,.7,.2,1), border-color .35s, background .35s;
+  }
+  .req:hover{transform:translateY(-6px); border-color:rgba(230,189,92,.45); background:rgba(230,189,92,.05);}
+  .req .ico{width:34px; height:34px; margin-bottom:14px; color:var(--gold);}
+  .req h3{
+    font-family:'Big Shoulders Display',sans-serif; text-transform:uppercase; letter-spacing:.04em;
+    font-weight:700; font-size:1.2rem; color:var(--ink); margin-bottom:6px;
+  }
+  .req p{color:var(--ink-soft); font-size:.9rem;}
+
+  /* ---------- Stat ---------- */
+  .stat{
+    margin-top:34px; text-align:center; padding:38px 22px; border-radius:18px;
+    background:linear-gradient(180deg, rgba(58,114,196,.14), rgba(230,189,92,.06));
+    border:1px solid var(--card-edge);
+  }
+  .stat .big{
+    font-family:'Big Shoulders Display',sans-serif; font-weight:900;
+    font-size:clamp(3.4rem,16vw,7rem); line-height:.9;
+    background:linear-gradient(180deg,#fff, var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .stat .cap{color:var(--ink-soft); max-width:40ch; margin:10px auto 0;}
+
+  /* ---------- Opportunities ---------- */
+  .opp-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:18px;}
+  .opp{
+    background:var(--card); border:1px solid var(--card-edge); border-radius:14px; padding:22px 24px;
+    display:flex; gap:16px; align-items:flex-start;
+  }
+  .opp .ico{flex:0 0 auto; width:28px; height:28px; color:var(--blue); margin-top:2px;}
+  .opp h4{font-family:'Big Shoulders Display',sans-serif; text-transform:uppercase; letter-spacing:.04em; font-weight:700; font-size:1.08rem; margin-bottom:3px;}
+  .opp p{color:var(--ink-soft); font-size:.9rem;}
+
+  .next{
+    margin-top:30px; padding:26px; border-radius:14px; border:1px dashed var(--line);
+    text-align:center; color:var(--ink-soft);
+  }
+  .next .chev{display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:14px;}
+  .next .chev span{
+    font-family:'Big Shoulders Display',sans-serif; text-transform:uppercase; letter-spacing:.05em;
+    font-weight:700; color:var(--ink); font-size:1.05rem; opacity:.55;
+  }
+  .next .chev span.first{color:var(--gold-bright); opacity:1;}
+
+  /* ---------- Footer ---------- */
+  footer{padding:clamp(50px,8vh,90px) 0 60px; text-align:center; border-top:1px solid var(--line); margin-top:40px;}
+  footer .emblem{width:54px; height:54px; margin-bottom:20px;}
+  footer .quote{
+    font-family:'Big Shoulders Display',sans-serif; text-transform:uppercase; font-weight:700;
+    font-size:clamp(1.3rem,5vw,2.2rem); color:var(--ink); line-height:1.05; max-width:18ch; margin:0 auto;
+  }
+  footer .from{color:var(--gold); margin-top:18px; letter-spacing:.06em; font-size:.92rem;}
+  footer .meta{color:var(--ink-faint); font-size:.78rem; margin-top:8px;}
+
+  /* ---------- Reveal animation ---------- */
+  .reveal{opacity:0; transform:translateY(26px); transition:opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in{opacity:1; transform:none;}
+  .d1{transition-delay:.08s} .d2{transition-delay:.16s} .d3{transition-delay:.24s}
+  .d4{transition-delay:.32s} .d5{transition-delay:.40s} .d6{transition-delay:.48s}
+
+  /* hero load-in */
+  .load{opacity:0; transform:translateY(22px); animation:loadin .9s cubic-bezier(.2,.7,.2,1) forwards;}
+  .l1{animation-delay:.15s}.l2{animation-delay:.35s}.l3{animation-delay:.55s}
+  .l4{animation-delay:.75s}.l5{animation-delay:.95s}.l6{animation-delay:1.15s}
+  @keyframes loadin{to{opacity:1; transform:none;}}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:780px){
+    .rank-grid{grid-template-columns:1fr;}
+    .req-grid{grid-template-columns:1fr 1fr;}
+    .opp-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:480px){
+    .req-grid{grid-template-columns:1fr;}
+    .wrap{padding:0 18px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important; transition:none !important;}
+    .reveal{opacity:1; transform:none;}
+    .load{opacity:1; transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sky"></div>
+<div class="stars"></div>
+<div class="stars2"></div>
+<canvas id="confetti"></canvas>
+
+<!-- =================== HERO =================== -->
+<header class="hero">
+  <div class="wrap">
+    <!-- Original wings + star emblem (swap for the official CAP seal if you like) -->
+    <svg class="emblem load l1" viewBox="0 0 120 120" aria-hidden="true">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f5d98a"/><stop offset="1" stop-color="#c89a32"/>
+        </linearGradient>
+      </defs>
+      <circle cx="60" cy="60" r="40" fill="none" stroke="url(#g1)" stroke-width="3"/>
+      <circle cx="60" cy="60" r="30" fill="#3a72c4" opacity=".18"/>
+      <path d="M60 34 l6.5 19.5 H86 l-15.5 11.5 6 19.5 L60 72.5 43.5 84 l6-19.5 L34 53.5 h19.5 Z" fill="url(#g1)"/>
+      <path d="M20 60 q18 -10 30 -2 q-14 2 -30 2 Z" fill="#cdd8ea" opacity=".8"/>
+      <path d="M100 60 q-18 -10 -30 -2 q14 2 30 2 Z" fill="#cdd8ea" opacity=".8"/>
+    </svg>
+
+    <span class="eyebrow load l1">Civil Air Patrol &middot; Bartow-Etowah Cadet Squadron (GA129)</span>
+    <h1 class="display load l2">Congratulations</h1>
+    <div class="rankline load l3">Cadet Second Lieutenant</div>
+    <div class="name load l4">Aliyah Ferguson</div>
+    <p class="sub load l5">Earner of the General Billy Mitchell Award and newly commissioned cadet officer. Pinned, promoted, and saluted &mdash; CAP has a new lieutenant.</p>
+    <div class="ribbon load l5"><span class="r"></span><span class="w"></span><span class="b"></span><span class="r"></span><span class="w"></span><span class="b"></span></div>
+
+    <figure class="hero-photo-wrap load l6">
+      <img class="hero-photo" src="aliyah-promotion.jpg" alt="Aliyah being promoted to Cadet Second Lieutenant"
+           onerror="this.style.display='none'; this.parentElement.querySelector('.photo-cap').textContent='[ add aliyah-promotion.jpg to the repo ]';" />
+      <figcaption class="photo-cap">The moment it became official.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<!-- =================== THE NEW GRADE =================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">A New Grade</span>
+      <h2>An Officer Now</h2>
+      <p>The blue cloth gives way to the cadet officer's insignia. Here is the grade Aliyah now wears, on the field uniform and on the service dress blues.</p>
+    </div>
+
+    <div class="rank-grid">
+      <div class="insignia-card shine reveal d1">
+        <div>
+          <div class="card-label">Cadet Second Lieutenant</div>
+          <div class="card-note">She now wears the cadet officer's insignia on both the OCP field uniform and the service dress &ldquo;blues&rdquo; &mdash; the same grade, whatever the day calls for.</div>
+        </div>
+      </div>
+
+      <div class="medal-card shine reveal d2">
+        <div class="award-name">The Billy Mitchell Award</div>
+        <div class="card-note">The second great milestone of the cadet program, and the gateway to the officer corps.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== THE JOURNEY =================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">The Road to Lieutenant</span>
+      <h2>From Airman to Officer</h2>
+      <p>Cadet officer grade is not handed out &mdash; it is climbed to, one achievement at a time. This is the path Aliyah walked to get here.</p>
+    </div>
+
+    <div class="timeline">
+      <div class="t-item reveal d1">
+        <span class="t-dot"></span>
+        <span class="t-tag">The Beginning</span>
+        <div class="t-grade">Cadet Airman Basic</div>
+        <div class="t-body">Joined the cadet corps, put on the uniform, and learned the Cadet Oath by heart.</div>
+      </div>
+
+      <div class="t-item reveal d1">
+        <span class="t-dot"></span>
+        <span class="t-tag">First Stripe &middot; Curry Achievement</span>
+        <div class="t-grade">Cadet Airman</div>
+        <div class="t-body">Passed her first leadership, aerospace, drill, and fitness requirements to earn that first stripe.</div>
+      </div>
+
+      <div class="t-item reveal d2">
+        <span class="t-dot"></span>
+        <span class="t-tag">Phase I Complete &middot; Wright Brothers Award</span>
+        <div class="t-grade">Cadet Staff Sergeant</div>
+        <div class="t-body">Finished the Learning Phase and crossed the first major milestone of the program.</div>
+      </div>
+
+      <div class="t-item reveal d2">
+        <span class="t-dot"></span>
+        <span class="t-tag">Leading From the Front</span>
+        <div class="t-grade">Through the Senior NCO Grades</div>
+        <div class="t-body">Advanced as a noncommissioned officer &mdash; training, mentoring, and leading the junior cadets behind her.</div>
+      </div>
+
+      <div class="t-item reveal d3">
+        <span class="t-dot"></span>
+        <span class="t-tag">Top of the Enlisted Ranks</span>
+        <div class="t-grade">Cadet Chief Master Sergeant</div>
+        <div class="t-body">Reached the highest cadet noncommissioned officer grade &mdash; the last rung before the officer corps.</div>
+      </div>
+
+      <div class="t-item cap reveal d3">
+        <span class="t-dot"></span>
+        <span class="t-tag">Phase II Complete &middot; Billy Mitchell Award</span>
+        <div class="t-grade">Cadet Second Lieutenant</div>
+        <div class="t-body">Earned the General Billy Mitchell Award and her commission. A cadet officer at last.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== WHAT IT TOOK =================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">What It Took</span>
+      <h2>The Requirements</h2>
+      <p>Reaching the Mitchell Award means clearing every one of these gates &mdash; no shortcuts, no partial credit.</p>
+    </div>
+
+    <div class="req-grid">
+      <div class="req reveal d1">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <h3>Leadership Exam</h3>
+        <p>A comprehensive, closed-book exam on <em>Learn to Lead</em>, Volume 2 &mdash; passed at 80% or higher.</p>
+      </div>
+      <div class="req reveal d2">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/><circle cx="12" cy="12" r="10"/></svg>
+        <h3>Aerospace Exam</h3>
+        <p>A closed-book exam on <em>Aerospace Dimensions</em> &mdash; every module, cyber included &mdash; also at 80% or higher.</p>
+      </div>
+      <div class="req reveal d3">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6.5 6.5 17.5 17.5"/><path d="M21 21l-1-1"/><path d="M3 3l1 1"/><path d="M18 6 6 18"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+        <h3>Physical Fitness</h3>
+        <p>Met the Healthy Fitness Zone on the Cadet Physical Fitness Test under the run-plus-two-of-three standard.</p>
+      </div>
+      <div class="req reveal d1">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>
+        <h3>Encampment</h3>
+        <p>Graduated a week-long encampment &mdash; long days, high standards, and full immersion in the core values.</p>
+      </div>
+      <div class="req reveal d2">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <h3>Leadership in Action</h3>
+        <p>Served in flight and staff roles, coached junior cadets, and led drill and public speaking &mdash; proven, not just tested.</p>
+      </div>
+      <div class="req reveal d3">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2 15 8.5 22 9.3l-5 4.7 1.3 6.9L12 17.6 5.7 20.9 7 14 2 9.3l7-.8z"/></svg>
+        <h3>Character &amp; Commitment</h3>
+        <p>Months of consistent attendance, character development, and active service to the squadron through it all.</p>
+      </div>
+    </div>
+
+    <div class="stat reveal d1">
+      <div class="big">15%</div>
+      <p class="cap">Only about <strong>15 percent</strong> of all Civil Air Patrol cadets ever earn the General Billy Mitchell Award. YOU are now one of them.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =================== WHAT'S NEXT =================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Doors Now Open</span>
+      <h2>What This Unlocks</h2>
+      <p>The Mitchell Award is recognized well beyond the squadron room.</p>
+    </div>
+
+    <div class="opp-grid">
+      <div class="opp reveal d1">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v6l9 4 9-4V7"/></svg>
+        <div><h4>Military Advanced Standing</h4><p>Eligible to enter the U.S. Air Force at the grade of E-3, with advanced credit toward AFROTC and a favorable nod from Academy admissions.</p></div>
+      </div>
+      <div class="opp reveal d2">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 10v6"/><path d="M6 12.5V16c0 1 2.7 3 6 3s6-2 6-3v-3.5"/><path d="M12 3 2 8l10 5 10-5-10-5z"/></svg>
+        <div><h4>Officer-Track Schools</h4><p>Now eligible for Cadet Officer School and the Civic Leadership Academy &mdash; the next level of cadet leadership training.</p></div>
+      </div>
+      <div class="opp reveal d1">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="6"/><path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5"/></svg>
+        <div><h4>Scholarships &amp; Activities</h4><p>Opens the door to a range of CAP scholarships and competitive national cadet special activities.</p></div>
+      </div>
+      <div class="opp reveal d2">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-6"/></svg>
+        <div><h4>A Real Command Role</h4><p>Steps into duty as a flight commander or cadet staff officer &mdash; leading and developing the cadets coming up behind her.</p></div>
+      </div>
+    </div>
+
+    <div class="next reveal d3">
+      <span class="eyebrow">The Milestones Still Ahead</span>
+      <div class="chev">
+        <span class="first">Mitchell &#10003;</span>
+        <span>&rarr; Earhart</span>
+        <span>&rarr; Eaker</span>
+        <span>&rarr; Spaatz</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== FOOTER =================== -->
+<footer>
+  <div class="wrap">
+    <svg class="emblem" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="40" fill="none" stroke="#e6bd5c" stroke-width="3"/>
+      <path d="M60 38 l5.5 16.5 H82 l-13 9.8 5 16.5L60 70 47 86.8l5-16.5-13-9.8H56Z" fill="#e6bd5c"/>
+    </svg>
+    <p class="quote">We could not be prouder of you, Lieutenant.</p>
+    <p class="from">&mdash; Your family</p>
+    <p class="meta">Cadet Second Lieutenant Aliyah Ferguson &middot; General Billy Mitchell Award &middot; 2026</p>
+  </div>
+</footer>
+
+<script>
+/* ---------- Scroll reveals ---------- */
+(function(){
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  }, {threshold:.16, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+
+/* ---------- Confetti burst (no sound, auto-stops) ---------- */
+(function(){
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var c = document.getElementById('confetti'), x = c.getContext('2d');
+  var W, H, parts = [], colors = ['#e6bd5c','#f5d98a','#d4243d','#3a72c4','#ffffff','#cdd8ea'];
+  function size(){ W = c.width = innerWidth; H = c.height = innerHeight; }
+  size(); addEventListener('resize', size);
+
+  function spawn(n){
+    for(var i=0;i<n;i++){
+      parts.push({
+        x: Math.random()*W,
+        y: -20 - Math.random()*H*0.4,
+        r: 4 + Math.random()*6,
+        c: colors[(Math.random()*colors.length)|0],
+        vx: (Math.random()-0.5)*2.4,
+        vy: 2 + Math.random()*3.2,
+        rot: Math.random()*Math.PI,
+        vr: (Math.random()-0.5)*0.25,
+        shape: Math.random() > 0.5 ? 0 : 1
+      });
+    }
+  }
+  spawn(180);
+
+  var start = performance.now(), duration = 5200;
+  function frame(now){
+    x.clearRect(0,0,W,H);
+    for(var i=parts.length-1;i>=0;i--){
+      var p = parts[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.rot += p.vr;
+      x.save(); x.translate(p.x,p.y); x.rotate(p.rot); x.fillStyle = p.c;
+      if(p.shape===0){ x.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6); }
+      else { x.beginPath(); x.ellipse(0,0,p.r*0.7,p.r,0,0,Math.PI*2); x.fill(); }
+      x.restore();
+      if(p.y > H + 30) parts.splice(i,1);
+    }
+    if(now - start < duration && parts.length){ requestAnimationFrame(frame); }
+    else if(parts.length){ requestAnimationFrame(frame); }
+    else { x.clearRect(0,0,W,H); }
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
