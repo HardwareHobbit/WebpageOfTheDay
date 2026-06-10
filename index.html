@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Happy Birthday, Colleen!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#0E1428;
+    --night-2:#18203F;
+    --night-3:#222B52;
+    --gold:#E8B64C;
+    --gold-bright:#F6D47C;
+    --parchment:#F3E7CB;
+    --parchment-2:#E9D9B4;
+    --quill:#3B2F1B;
+    --quill-soft:#6B5B3E;
+    --crimson:#8E2B33;
+    --emerald:#2F6B4F;
+    --silver:#C9D4E8;
+    --shadow:0 12px 34px rgba(8,12,28,.45);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Crimson Pro',Georgia,serif;
+    background:var(--night);
+    color:var(--silver);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--gold);color:var(--night)}
+
+  /* ---------- spark canvas overlay ---------- */
+  #sparks{
+    position:fixed;inset:0;width:100%;height:100%;
+    pointer-events:none;z-index:50;
+  }
+
+  /* ---------- shared bones ---------- */
+  section{padding:76px 20px;position:relative}
+  .wrap{max-width:720px;margin:0 auto}
+  .eyebrow{
+    display:inline-block;
+    font-weight:700;font-size:.82rem;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--gold);
+    border:1px solid rgba(232,182,76,.45);
+    padding:7px 16px;border-radius:999px;
+    margin-bottom:18px;
+    background:rgba(232,182,76,.08);
+  }
+  h1,h2{font-family:'Cinzel Decorative',serif;font-weight:700;line-height:1.12}
+  h2{font-size:clamp(1.7rem,5.6vw,2.5rem);margin-bottom:14px;color:var(--gold-bright)}
+  p.lead{font-size:clamp(1.08rem,3.8vw,1.25rem);line-height:1.65;color:#AAB6D6}
+
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.visible{opacity:1;transform:none}
+
+  /* ---------- hero: the night sky ---------- */
+  .hero{
+    position:relative;
+    min-height:100svh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;
+    padding:max(40px,env(safe-area-inset-top)) 20px 70px;
+    background:
+      radial-gradient(900px 540px at 50% -8%, #2A3464 0%, transparent 60%),
+      radial-gradient(700px 420px at 88% 92%, rgba(142,43,51,.28) 0%, transparent 60%),
+      radial-gradient(700px 420px at 6% 88%, rgba(47,107,79,.22) 0%, transparent 60%),
+      var(--night);
+    overflow:hidden;
+  }
+  /* ---------- full-page starfield ---------- */
+  #starfield{
+    position:fixed;inset:0;z-index:1;
+    pointer-events:none;overflow:hidden;
+  }
+  .star{
+    position:absolute;border-radius:50%;
+    background:#fff;
+    animation:twinkle ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes twinkle{
+    0%,100%{opacity:.2;transform:scale(.75)}
+    50%{opacity:1;transform:scale(1.25)}
+  }
+
+  /* content sits above the starfield */
+  .wrap{position:relative;z-index:2}
+  .hero-badge,.hero h1,.hero .sub,.age-seal{position:relative;z-index:2}
+  footer > *{position:relative;z-index:2}
+
+  /* floating candles, Great Hall style */
+  .fcandle{
+    position:absolute;width:18px;z-index:2;
+    animation:hover-bob ease-in-out infinite;
+    pointer-events:none;
+    filter:drop-shadow(0 0 12px rgba(246,212,124,.35));
+  }
+  .fcandle .fl{
+    display:block;
+    width:8px;height:13px;margin:0 auto 2px;
+    background:radial-gradient(circle at 50% 75%, #FFF3C8 0%, var(--gold-bright) 45%, #E08A3A 100%);
+    border-radius:50% 50% 50% 50% / 64% 64% 36% 36%;
+    transform-origin:50% 90%;
+    animation:flicker .4s ease-in-out infinite alternate;
+  }
+  .fcandle .body{
+    display:block;
+    width:14px;margin:0 auto;border-radius:4px 4px 6px 6px;
+    background:linear-gradient(180deg,#FBF4E2 0%,#E8DCBC 70%,#D8C99F 100%);
+    box-shadow:inset 0 -3px 0 rgba(59,47,27,.18);
+  }
+  @keyframes hover-bob{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-16px)}
+  }
+  @keyframes flicker{
+    from{transform:scale(1) rotate(-4deg)}
+    to{transform:scale(1.18) rotate(5deg)}
+  }
+
+  .hero-badge{
+    font-family:'Crimson Pro',serif;font-weight:700;font-size:.9rem;
+    letter-spacing:.28em;text-transform:uppercase;color:var(--gold);
+    margin-bottom:16px;
+    opacity:0;animation:riseIn .8s .2s ease forwards;
+  }
+  .hero h1{
+    font-size:clamp(2.1rem,9vw,4.4rem);
+    color:#F4ECDA;
+    text-shadow:0 0 28px rgba(232,182,76,.25);
+    opacity:0;animation:riseIn .9s .45s cubic-bezier(.2,1.2,.4,1) forwards;
+  }
+  .hero h1 .gold{
+    background:linear-gradient(100deg, var(--gold) 20%, #FFF0C0 50%, var(--gold) 80%);
+    background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    animation:shimmer 3.5s 1.6s ease-in-out infinite;
+  }
+  @keyframes shimmer{
+    0%,100%{background-position:0% 0}
+    50%{background-position:100% 0}
+  }
+  .hero .sub{
+    margin-top:18px;font-size:clamp(1.1rem,4.2vw,1.35rem);color:#AAB6D6;max-width:34ch;
+    opacity:0;animation:riseIn .9s .75s ease forwards;
+  }
+  .age-seal{
+    margin-top:30px;
+    width:152px;height:152px;border-radius:50%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 32% 28%, #B23A44, var(--crimson) 70%);
+    box-shadow:0 10px 30px rgba(142,43,51,.5), inset 0 0 0 5px rgba(246,212,124,.55), inset 0 0 0 9px rgba(142,43,51,1), inset 0 0 0 11px rgba(246,212,124,.4);
+    opacity:0;animation:riseIn .9s 1s ease forwards;
+  }
+  .age-seal .n{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:3.1rem;color:var(--gold-bright);line-height:1}
+  .age-seal .t{font-size:.85rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#F0D7A8;margin-top:6px}
+  @keyframes riseIn{
+    from{opacity:0;transform:translateY(26px)}
+    to{opacity:1;transform:none}
+  }
+  .scroll-hint{
+    position:absolute;bottom:max(22px,env(safe-area-inset-bottom));left:50%;z-index:2;
+    font-size:1.5rem;color:var(--gold);
+    opacity:0;
+    animation:hint-bob 1.7s 1.6s ease-in-out infinite, fadeIn .8s 1.6s forwards;
+  }
+  @keyframes hint-bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,9px)}}
+  @keyframes fadeIn{to{opacity:1}}
+
+  /* ---------- the letter ---------- */
+  .letter-section{background:linear-gradient(180deg, var(--night) 0%, var(--night-2) 100%)}
+  .letter{
+    margin-top:30px;
+    background:
+      radial-gradient(600px 300px at 20% 0%, rgba(255,255,255,.5), transparent 60%),
+      linear-gradient(160deg, var(--parchment) 0%, var(--parchment-2) 100%);
+    color:var(--quill);
+    border-radius:6px;
+    padding:34px 26px 38px;
+    box-shadow:var(--shadow);
+    position:relative;
+    transform:rotate(-.7deg);
+  }
+  @media(min-width:640px){.letter{padding:44px 48px}}
+  .letter::before{ /* worn edge */
+    content:"";position:absolute;inset:8px;border:1px solid rgba(59,47,27,.25);border-radius:3px;pointer-events:none;
+  }
+  .letter .crest{
+    font-family:'Cinzel Decorative',serif;font-weight:700;text-align:center;
+    font-size:clamp(1rem,3.6vw,1.25rem);letter-spacing:.06em;color:var(--crimson);
+    margin-bottom:4px;
+  }
+  .letter .crest-sub{
+    text-align:center;font-size:.86rem;font-style:italic;color:var(--quill-soft);
+    border-bottom:1px solid rgba(59,47,27,.3);padding-bottom:16px;margin-bottom:20px;
+  }
+  .letter p{font-size:clamp(1.05rem,3.9vw,1.18rem);line-height:1.7;margin-bottom:14px}
+  .letter .sig{
+    margin-top:22px;text-align:right;font-style:italic;font-weight:600;
+  }
+  .letter .seal-dot{
+    position:absolute;right:22px;bottom:-18px;
+    width:54px;height:54px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #B23A44, var(--crimson) 75%);
+    box-shadow:0 6px 16px rgba(8,12,28,.4), inset 0 0 0 3px rgba(246,212,124,.45);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Cinzel Decorative',serif;font-weight:700;color:var(--gold-bright);font-size:1.2rem;
+    transform:rotate(8deg);
+  }
+
+  /* ---------- sorting ceremony ---------- */
+  .sort-section{background:var(--night-2);text-align:center}
+  .hat-stage{margin:36px auto 0;width:min(280px,80vw);position:relative}
+  .hat{
+    width:min(240px,68vw);height:auto;margin:0 auto;position:relative;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+    background:none;border:none;padding:0;display:block;
+    filter:drop-shadow(0 18px 24px rgba(8,12,28,.6));
+    transition:transform .2s;
+  }
+  .hat:active{transform:scale(.97)}
+  .hat:focus-visible{outline:3px solid var(--gold);outline-offset:6px;border-radius:14px}
+  .hat svg{width:100%;height:auto;display:block}
+  .hat .mouth,.hat .brow,.hat .eye{transform-box:fill-box;transform-origin:center}
+  .hat.thinking{animation:ponder .6s ease-in-out infinite}
+  .hat.thinking .mouth{animation:talk .42s ease-in-out infinite alternate}
+  .hat.thinking .brow{animation:browWiggle .84s ease-in-out infinite alternate}
+  @keyframes ponder{
+    0%,100%{transform:rotate(-2.5deg)}
+    50%{transform:rotate(3deg)}
+  }
+  @keyframes talk{
+    from{transform:scaleY(.65)}
+    to{transform:scaleY(1.45)}
+  }
+  @keyframes browWiggle{
+    from{transform:translateY(0)}
+    to{transform:translateY(-3px)}
+  }
+  .sort-status{
+    margin-top:26px;min-height:3.2em;
+    font-size:clamp(1.1rem,4.2vw,1.3rem);font-style:italic;color:#AAB6D6;
+    transition:opacity .25s;
+  }
+  .sort-status.result{
+    font-family:'Cinzel Decorative',serif;font-style:normal;font-weight:700;
+    color:var(--gold-bright);font-size:clamp(1.4rem,5.4vw,1.9rem);
+    text-shadow:0 0 22px rgba(232,182,76,.4);
+  }
+  .sort-tip{margin-top:8px;font-size:.95rem;color:#7C89AD}
+
+  /* ---------- notes ---------- */
+  .notes-section{background:linear-gradient(180deg, var(--night-2) 0%, var(--night) 100%)}
+  .note-grid{display:grid;gap:16px;margin-top:30px}
+  @media(min-width:640px){.note-grid{grid-template-columns:1fr 1fr}}
+  .note{
+    background:linear-gradient(165deg, var(--parchment) 0%, var(--parchment-2) 100%);
+    color:var(--quill);
+    border-radius:6px;padding:24px 22px;
+    box-shadow:var(--shadow);
+    border-top:5px solid var(--crimson);
+    transform:rotate(-.6deg);
+    position:relative;
+  }
+  .note:nth-child(2){border-top-color:var(--gold);transform:rotate(.7deg)}
+  .note:nth-child(3){border-top-color:var(--emerald);transform:rotate(.5deg)}
+  .note:nth-child(4){border-top-color:#3E5C9A;transform:rotate(-.8deg)}
+  .note .emoji{font-size:1.7rem}
+  .note h3{font-family:'Cinzel Decorative',serif;font-size:1.02rem;margin:10px 0 7px;color:var(--crimson)}
+  .note:nth-child(2) h3{color:#9A6B12}
+  .note:nth-child(3) h3{color:var(--emerald)}
+  .note:nth-child(4) h3{color:#3E5C9A}
+  .note p{color:var(--quill);line-height:1.62;font-size:1.02rem}
+
+  /* ---------- snitch game ---------- */
+  .game-section{background:var(--night)}
+  .game-section .wrap{text-align:left}
+  .pitch{
+    position:relative;margin-top:30px;
+    height:430px;border-radius:24px;
+    background:
+      radial-gradient(500px 260px at 50% 115%, rgba(47,107,79,.35), transparent 70%),
+      radial-gradient(400px 200px at 12% -10%, rgba(62,92,154,.3), transparent 70%),
+      var(--night-2);
+    border:1px solid rgba(201,212,232,.14);
+    overflow:hidden;
+    touch-action:manipulation;
+  }
+  .pitch .hoop{
+    position:absolute;border:3px solid rgba(201,212,232,.18);border-radius:50%;
+    pointer-events:none;
+  }
+  .pitch-hint{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    text-align:center;padding:0 26px;
+    font-size:1.1rem;font-style:italic;color:rgba(201,212,232,.55);
+    pointer-events:none;transition:opacity .4s;
+  }
+  .pitch-hint.hide{opacity:0}
+
+  .snitch{
+    position:absolute;left:0;top:0;
+    width:64px;height:64px;
+    background:none;border:none;padding:0;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transition:transform 1s cubic-bezier(.45,.05,.35,1);
+    will-change:transform;
+    user-select:none;-webkit-user-select:none;
+  }
+  .snitch .ball{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:30px;height:30px;border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, #FFF0C0, var(--gold) 55%, #A87B22 100%);
+    box-shadow:0 0 16px 4px rgba(232,182,76,.45);
+  }
+  .snitch .ball::after{
+    content:"";position:absolute;left:50%;top:4px;bottom:4px;width:2px;margin-left:-1px;
+    background:rgba(120,86,20,.55);border-radius:2px;
+  }
+  .snitch .wing{
+    position:absolute;top:50%;width:26px;height:12px;
+    background:linear-gradient(90deg, rgba(255,255,255,.95), rgba(255,255,255,.35));
+    border-radius:50% 100% 0 50% / 50% 100% 0 50%;
+    transform-origin:0% 50%;
+    animation:flapL .18s ease-in-out infinite alternate;
+  }
+  .snitch .wing.r{
+    left:auto;right:1px;
+    transform-origin:100% 50%;
+    border-radius:100% 50% 50% 0 / 100% 50% 50% 0;
+    animation-name:flapR;
+  }
+  .snitch .wing.l{left:1px}
+  @keyframes flapL{from{transform:translateY(-50%) rotate(8deg)}to{transform:translateY(-50%) rotate(-34deg)}}
+  @keyframes flapR{from{transform:translateY(-50%) rotate(-8deg)}to{transform:translateY(-50%) rotate(34deg)}}
+  .snitch.caught .ball{animation:caughtPulse .4s ease}
+  @keyframes caughtPulse{
+    0%{transform:translate(-50%,-50%) scale(1)}
+    45%{transform:translate(-50%,-50%) scale(1.7)}
+    100%{transform:translate(-50%,-50%) scale(1)}
+  }
+
+  .joke-scroll{
+    margin-top:20px;
+    background:linear-gradient(165deg, var(--parchment) 0%, var(--parchment-2) 100%);
+    color:var(--quill);
+    border-radius:6px;padding:22px 24px;
+    box-shadow:var(--shadow);
+    min-height:104px;display:flex;flex-direction:column;justify-content:center;
+    position:relative;
+  }
+  .joke-scroll::before,.joke-scroll::after{
+    content:"";position:absolute;left:0;right:0;height:10px;
+    background:linear-gradient(180deg,#C9B383,#A98F5C);
+    border-radius:999px;
+  }
+  .joke-scroll::before{top:-5px}
+  .joke-scroll::after{bottom:-5px}
+  .joke-scroll.bump{animation:bump .35s ease}
+  @keyframes bump{0%{transform:scale(.97)}55%{transform:scale(1.02)}100%{transform:scale(1)}}
+  .joke-scroll .label{
+    font-size:.76rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--crimson);margin-bottom:8px;font-family:'Crimson Pro',serif;
+  }
+  .joke-scroll .text{font-size:1.12rem;line-height:1.55;font-weight:600}
+  .joke-count{margin-top:16px;text-align:center;font-style:italic;color:#7C89AD;font-size:1rem}
+
+  /* ---------- footer ---------- */
+  footer{
+    background:#0A0F20;color:#8F9CC0;text-align:center;
+    padding:58px 20px calc(58px + env(safe-area-inset-bottom));
+    border-top:1px solid rgba(232,182,76,.18);
+  }
+  footer .wand{font-size:1.9rem;display:block;margin-bottom:14px}
+  footer .from{
+    font-family:'Cinzel Decorative',serif;font-weight:700;
+    font-size:clamp(1.25rem,4.6vw,1.7rem);color:var(--gold-bright);margin-bottom:12px;
+  }
+  footer small{font-size:1rem;display:block;line-height:1.7;font-style:italic}
+  footer .mm{
+    margin-top:20px;font-size:.82rem;letter-spacing:.24em;text-transform:uppercase;
+    color:#5B688D;font-style:normal;
+  }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+    .hero-badge,.hero h1,.hero .sub,.age-seal,.scroll-hint{opacity:1}
+    .reveal{opacity:1;transform:none}
+    .star{opacity:.6}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="sparks" aria-hidden="true"></canvas>
+<div id="starfield" aria-hidden="true"></div>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="hero">
+  <div class="hero-badge">Delivered by owl post</div>
+  <h1>Happy Birthday,<br><span class="gold">Colleen!</span></h1>
+  <p class="sub">The Great Hall is booked, so we decorated the internet instead. Today, the whole castle celebrates you.</p>
+  <div class="age-seal" aria-label="34 years magical">
+    <span class="n">34</span>
+    <span class="t">Years Magical</span>
+  </div>
+  <div class="scroll-hint" aria-hidden="true">▼</div>
+</header>
+
+<!-- ============ THE LETTER ============ -->
+<section class="letter-section">
+  <div class="wrap reveal">
+    <span class="eyebrow">First, some official business</span>
+    <h2>A letter has arrived</h2>
+
+    <div class="letter">
+      <div class="crest">School of Witchcraft &amp; Birthday Wizardry</div>
+      <div class="crest-sub">Office of Extremely Important Celebrations</div>
+      <p>Dear Mrs. Colleen,</p>
+      <p>We are pleased to inform you that you have been accepted to an evening of being completely spoiled, effective the moment you finish reading this letter. Term lasts until you fall asleep on the couch.</p>
+      <p>Required equipment: one comfy blanket, zero chores, and a high tolerance for wizard puns. Wands are optional. Hugs are not.</p>
+      <p>No owl reply is necessary. Simply put your feet up, and let the magic come to you.</p>
+      <p class="sig">Yours celebratorily,<br>The Deputy Headmaster of This Household<br><span style="font-size:.92rem">(and his three highly enthusiastic assistants)</span></p>
+      <div class="seal-dot" aria-hidden="true">C</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SORTING CEREMONY ============ -->
+<section class="sort-section">
+  <div class="wrap reveal">
+    <span class="eyebrow">The sorting ceremony</span>
+    <h2>Where do you belong?</h2>
+    <p class="lead">Tap the hat. It has been thinking about this all year.</p>
+
+    <div class="hat-stage">
+      <button class="hat" id="hat" aria-label="Tap the sorting hat">
+        <svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="hatBody" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#7E6342"/>
+              <stop offset=".5" stop-color="#5C462A"/>
+              <stop offset="1" stop-color="#3C2D19"/>
+            </linearGradient>
+            <linearGradient id="hatBrim" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#74593B"/>
+              <stop offset="1" stop-color="#33250F"/>
+            </linearGradient>
+            <radialGradient id="brimTop" cx=".5" cy=".4" r=".7">
+              <stop offset="0" stop-color="#544020"/>
+              <stop offset="1" stop-color="#42321A"/>
+            </radialGradient>
+          </defs>
+
+          <!-- brim -->
+          <ellipse cx="110" cy="166" rx="100" ry="27" fill="url(#hatBrim)"/>
+          <ellipse cx="110" cy="161" rx="86" ry="19" fill="url(#brimTop)"/>
+
+          <!-- body with drooping curled tip -->
+          <path d="M 50 168
+                   Q 60 100 86 54
+                   Q 95 35 112 26
+                   Q 138 12 152 27
+                   Q 162 39 150 49
+                   Q 140 57 131 47
+                   Q 124 40 121 53
+                   Q 113 86 131 118
+                   Q 145 142 172 168
+                   Z" fill="url(#hatBody)"/>
+
+          <!-- soft left-edge highlight -->
+          <path d="M 56 160 Q 66 104 88 60" stroke="#94794F" stroke-width="4" fill="none" stroke-linecap="round" opacity=".5"/>
+
+          <!-- crumple creases -->
+          <path d="M 80 92 Q 102 102 117 90" stroke="#2A1E0C" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".55"/>
+          <path d="M 86 66 Q 100 74 111 64" stroke="#2A1E0C" stroke-width="2.8" fill="none" stroke-linecap="round" opacity=".45"/>
+          <path d="M 120 44 Q 128 37 137 42" stroke="#2A1E0C" stroke-width="2.8" fill="none" stroke-linecap="round" opacity=".5"/>
+
+          <!-- stitched patch -->
+          <g opacity=".85">
+            <rect x="112" y="70" width="19" height="15" rx="3" fill="#4E3B1F" transform="rotate(10 121 77)"/>
+            <path d="M 112 70 l 19 15 M 131 70 l -19 15" stroke="#2A1E0C" stroke-width="1.4" transform="rotate(10 121 77)" opacity=".7"/>
+          </g>
+
+          <!-- face: brows -->
+          <path class="brow" d="M 70 114 Q 83 102 98 111" stroke="#1E1404" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path class="brow" d="M 110 110 Q 123 99 136 109" stroke="#1E1404" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+          <!-- face: eye folds -->
+          <path class="eye" d="M 77 124 Q 86 118 96 124 Q 86 129 77 124 Z" fill="#160F03"/>
+          <path class="eye" d="M 113 122 Q 122 116 131 122 Q 122 127 113 122 Z" fill="#160F03"/>
+
+          <!-- face: nose crease -->
+          <path d="M 104 124 Q 101 134 105 142" stroke="#2A1E0C" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>
+
+          <!-- face: wide mouth fold -->
+          <path class="mouth" d="M 68 146 Q 106 168 148 143 Q 108 155 68 146 Z" fill="#160F03"/>
+          <path d="M 64 145 Q 106 170 152 142" stroke="#1E1404" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/>
+        </svg>
+      </button>
+      <p class="sort-status" id="sortStatus">The hat awaits…</p>
+      <p class="sort-tip" id="sortTip">Tap the hat to begin</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NOTES ============ -->
+<section class="notes-section">
+  <div class="wrap reveal">
+    <span class="eyebrow">Owl post, fan mail division</span>
+    <h2>Notes from your biggest fans</h2>
+    <p class="lead">Four parchments arrived just in time for tonight. The owls insisted these were urgent.</p>
+
+    <div class="note-grid">
+      <div class="note">
+        <span class="emoji">🪄</span>
+        <h3>World's Best Mom</h3>
+        <p>Officially certified by the four most qualified judges on the planet. The ruling is final, binding, and protected by a charm no one can break.</p>
+      </div>
+      <div class="note">
+        <span class="emoji">💛</span>
+        <h3>World's Best Wife</h3>
+        <p>You make every single day better just by being in it. Honestly, you're the closest thing to real magic this house has ever seen.</p>
+      </div>
+      <div class="note">
+        <span class="emoji">⏳</span>
+        <h3>Concerning the Number 34</h3>
+        <p>Wizards measure age differently. By our calculations you are 21, plus 13 years of bonus wisdom. The math checks out. We used a time turner.</p>
+      </div>
+      <div class="note">
+        <span class="emoji">🔮</span>
+        <h3>Today's Prophecy</h3>
+        <p>The crystal ball is unanimous: 100% chance of being celebrated, scattered hugs throughout the day, and gusts of compliments up to 34 mph.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SNITCH GAME ============ -->
+<section class="game-section">
+  <div class="wrap reveal">
+    <span class="eyebrow">Quidditch, sort of</span>
+    <h2>Catch the Golden Snitch</h2>
+    <p class="lead">Every catch releases a certified wizard dad joke. The Snitch is fast. The jokes are slow. Tap it if you can.</p>
+
+    <div class="pitch" id="pitch">
+      <span class="hoop" style="width:90px;height:90px;top:12%;left:8%"></span>
+      <span class="hoop" style="width:60px;height:60px;bottom:14%;right:10%"></span>
+      <span class="hoop" style="width:46px;height:46px;top:18%;right:22%"></span>
+      <div class="pitch-hint" id="pitchHint">The Snitch is loose. Tap it! ✨</div>
+      <button class="snitch" id="snitch" aria-label="Catch the golden snitch">
+        <span class="wing l"></span>
+        <span class="wing r"></span>
+        <span class="ball"></span>
+      </button>
+    </div>
+
+    <div class="joke-scroll" id="jokeScroll">
+      <div class="label" id="jokeLabel">Joke scroll, sealed</div>
+      <div class="text" id="jokeText">Catch your first Snitch to unseal a top-shelf groaner.</div>
+    </div>
+    <div class="joke-count" id="jokeCount">0 of 10 jokes unsealed</div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <span class="wand">🪄</span>
+  <div class="from">From your loving family</div>
+  <small>
+    Happy 34th birthday, Colleen. You are, always have been,<br>
+    and always will be the magic in this house.
+  </small>
+  <div class="mm">✦ &nbsp;Mischief managed&nbsp; ✦</div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ============ gold spark engine ============ */
+  var canvas = document.getElementById("sparks");
+  var ctx = canvas.getContext("2d");
+  var pieces = [];
+  var sparkColors = ["#E8B64C","#F6D47C","#FFF0C0","#C9A24B","#FFFFFF","#D8893B"];
+  var rafId = null;
+
+  function sizeCanvas(){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  sizeCanvas();
+  window.addEventListener("resize", sizeCanvas);
+
+  function burst(x, y, count){
+    if (reducedMotion) count = Math.min(count, 12);
+    for (var i = 0; i < count; i++){
+      var angle = Math.random() * Math.PI * 2;
+      var speed = 2.5 + Math.random() * 5.5;
+      pieces.push({
+        x: x, y: y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 2.5,
+        r: 1.5 + Math.random() * 3,
+        kind: Math.random() < 0.35 ? "star" : "dot",
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.25,
+        color: sparkColors[Math.floor(Math.random() * sparkColors.length)],
+        life: 80 + Math.random() * 50
+      });
+    }
+    if (!rafId) rafId = requestAnimationFrame(tick);
+  }
+
+  function drawStar(p){
+    ctx.beginPath();
+    for (var i = 0; i < 4; i++){
+      var a = p.rot + i * Math.PI / 2;
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + Math.cos(a) * p.r * 2.6, p.y + Math.sin(a) * p.r * 2.6);
+    }
+    ctx.strokeStyle = p.color;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+  }
+
+  function tick(){
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    for (var i = pieces.length - 1; i >= 0; i--){
+      var p = pieces[i];
+      p.vy += 0.12;
+      p.vx *= 0.985;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.life--;
+      if (p.life <= 0 || p.y > window.innerHeight + 30){
+        pieces.splice(i, 1);
+        continue;
+      }
+      ctx.globalAlpha = Math.min(1, p.life / 35);
+      if (p.kind === "star"){
+        drawStar(p);
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (pieces.length > 0){
+      rafId = requestAnimationFrame(tick);
+    } else {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      rafId = null;
+    }
+  }
+
+  /* welcome burst */
+  window.addEventListener("load", function(){
+    setTimeout(function(){
+      burst(window.innerWidth * 0.5, window.innerHeight * 0.30, 80);
+      setTimeout(function(){ burst(window.innerWidth * 0.22, window.innerHeight * 0.24, 36); }, 280);
+      setTimeout(function(){ burst(window.innerWidth * 0.78, window.innerHeight * 0.27, 36); }, 480);
+    }, 700);
+  });
+
+  /* ============ night sky: stars + floating candles ============ */
+  var hero = document.getElementById("hero");
+  var starfield = document.getElementById("starfield");
+
+  for (var s = 0; s < 80; s++){
+    var st = document.createElement("span");
+    st.className = "star";
+    var size = 1.5 + Math.random() * 3;
+    st.style.width = size + "px";
+    st.style.height = size + "px";
+    st.style.left = Math.random() * 100 + "%";
+    st.style.top = Math.random() * 100 + "%";
+    st.style.animationDuration = (1.2 + Math.random() * 2) + "s";
+    st.style.animationDelay = (Math.random() * 3) + "s";
+    starfield.appendChild(st);
+  }
+
+  var candleSpots = [
+    {left:"7%",  top:"16%", h:34, dur:5.2},
+    {left:"4%",  top:"35%", h:24, dur:6.4},
+    {left:"86%", top:"14%", h:30, dur:5.8},
+    {left:"90%", top:"39%", h:22, dur:6.9},
+    {left:"10%", top:"68%", h:26, dur:6.1},
+    {left:"88%", top:"66%", h:32, dur:5.5}
+  ];
+  candleSpots.forEach(function(c, i){
+    var el = document.createElement("span");
+    el.className = "fcandle";
+    el.style.left = c.left;
+    el.style.top = c.top;
+    el.style.animationDuration = c.dur + "s";
+    el.style.animationDelay = (i * 0.6) + "s";
+    el.innerHTML = '<span class="fl"></span><span class="body" style="height:' + c.h + 'px"></span>';
+    hero.appendChild(el);
+  });
+
+  /* ============ scroll reveals ============ */
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){
+        e.target.classList.add("visible");
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll(".reveal").forEach(function(el){ observer.observe(el); });
+
+  /* ============ sorting ceremony ============ */
+  var hat = document.getElementById("hat");
+  var sortStatus = document.getElementById("sortStatus");
+  var sortTip = document.getElementById("sortTip");
+  var sorting = false;
+  var sorted = false;
+
+  var ponderings = [
+    "Hmm… interesting. Very interesting…",
+    "Plenty of kindness, I see. Patience, too. Heaps of it, actually…",
+    "Raises three children AND tolerates dad jokes? Remarkable courage…",
+    "Difficult. VERY difficult. So much talent in one person…"
+  ];
+
+  hat.addEventListener("click", function(){
+    if (sorting) return;
+    sorting = true;
+    sorted = false;
+    hat.classList.add("thinking");
+    sortStatus.classList.remove("result");
+    sortTip.textContent = "The hat is deliberating…";
+
+    var step = 0;
+    function nextLine(){
+      if (step < ponderings.length){
+        sortStatus.textContent = "“" + ponderings[step] + "”";
+        step++;
+        setTimeout(nextLine, 3000);
+      } else {
+        hat.classList.remove("thinking");
+        sortStatus.textContent = "QUEEN OF THE HOUSE!";
+        sortStatus.classList.add("result");
+        sortTip.textContent = "The hat has spoken. There is no appeal process. Tap again for a re-sort.";
+        sorting = false;
+        sorted = true;
+        var r = sortStatus.getBoundingClientRect();
+        burst(r.left + r.width / 2, r.top, 110);
+      }
+    }
+    nextLine();
+  });
+
+  /* ============ snitch game ============ */
+  var jokes = [
+    "Why can't you tell a Dementor a birthday joke? It sucks all the fun out of the room.",
+    "How do young wizards get downstairs so fast when there's birthday cake? They Slytherin.",
+    "Why does Voldemort prefer social media over real life? He has plenty of followers, but no friends.",
+    "How many wizards does it take to light 34 birthday candles? None. Lumos.",
+    "Why did Snape stand in the middle of the road? So you'd never know which side he's on.",
+    "How do you fix a dropped birthday cake? Reparo. How do you fix the frosting the kids already ate? You can't. We're sorry.",
+    "Why was the wizard's broom late to the party? It over-swept.",
+    "What's a ghost's favorite party game? Hide and shriek.",
+    "Why do Seekers make terrible party guests? They bolt the second they've caught what they came for.",
+    "Your candles relit themselves three times tonight. Either you're a powerful witch, or the kids bought trick candles. (It was the kids.)"
+  ];
+
+  var pitch = document.getElementById("pitch");
+  var pitchHint = document.getElementById("pitchHint");
+  var snitch = document.getElementById("snitch");
+  var jokeScroll = document.getElementById("jokeScroll");
+  var jokeLabel = document.getElementById("jokeLabel");
+  var jokeText = document.getElementById("jokeText");
+  var jokeCountEl = document.getElementById("jokeCount");
+
+  var unlocked = 0;
+  var jokeOrder = jokes.map(function(_, i){ return i; });
+  for (var i = jokeOrder.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = jokeOrder[i]; jokeOrder[i] = jokeOrder[j]; jokeOrder[j] = tmp;
+  }
+  var nextJokePtr = 0;
+
+  function randomSpot(){
+    var w = pitch.clientWidth - 70;
+    var h = pitch.clientHeight - 70;
+    return {
+      x: 4 + Math.random() * Math.max(10, w - 8),
+      y: 4 + Math.random() * Math.max(10, h - 8)
+    };
+  }
+
+  function dart(){
+    var p = randomSpot();
+    snitch.style.transform = "translate(" + p.x + "px," + p.y + "px)";
+  }
+
+  /* start position */
+  dart();
+
+  var dartTimer = null;
+  function scheduleDart(){
+    var delay = reducedMotion ? 2600 : (1100 + Math.random() * 900);
+    dartTimer = setTimeout(function(){
+      if (!document.hidden) dart();
+      scheduleDart();
+    }, delay);
+  }
+
+  var pitchObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){
+        if (!dartTimer) scheduleDart();
+      } else if (dartTimer){
+        clearTimeout(dartTimer);
+        dartTimer = null;
+      }
+    });
+  }, { threshold: 0.2 });
+  pitchObserver.observe(pitch);
+
+  function showNextJoke(){
+    var idx;
+    if (nextJokePtr < jokeOrder.length){
+      idx = jokeOrder[nextJokePtr++];
+      unlocked++;
+    } else {
+      idx = jokeOrder[Math.floor(Math.random() * jokeOrder.length)];
+    }
+    jokeLabel.textContent = "Wizard dad joke, scroll #" + Math.min(nextJokePtr, jokes.length);
+    jokeText.textContent = jokes[idx];
+
+    jokeScroll.classList.remove("bump");
+    void jokeScroll.offsetWidth;
+    jokeScroll.classList.add("bump");
+
+    if (unlocked >= jokes.length){
+      jokeCountEl.textContent = "All " + jokes.length + " scrolls unsealed. The Ministry apologizes for the puns. Happy birthday! ✨";
+    } else {
+      jokeCountEl.textContent = unlocked + " of " + jokes.length + " jokes unsealed";
+    }
+  }
+
+  var catchable = true;
+  snitch.addEventListener("pointerdown", function(ev){
+    ev.preventDefault();
+    if (!catchable) return;
+    catchable = false;
+    pitchHint.classList.add("hide");
+
+    snitch.classList.add("caught");
+    var r = snitch.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top + r.height / 2, 34);
+    showNextJoke();
+
+    setTimeout(function(){
+      snitch.classList.remove("caught");
+      dart();
+      catchable = true;
+    }, 420);
+  });
+
+})();
+</script>
+</body>
+</html>
