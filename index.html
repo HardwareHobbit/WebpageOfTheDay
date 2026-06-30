@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>dakota410berry — The Comeback</title>
+<meta name="description" content="dakota410berry is coming back to streaming. Two themes, one comeback." />
+
+<!--
+  ===========================================================================
+  COMBINED BUILD — toggle between two full themes:
+    NEON      (#v1)  cyber / cyan + amber / "The GOAT Returns"
+    BROADCAST (#v2)  retro TV / red + gold / "Channel 410, Back On Air"
+
+  The toggle lives in the slim bar at the very top. The last pick is
+  remembered, and you can deep-link a theme with  ?theme=v1  or  ?theme=v2
+
+  HOW TO EDIT (search the bracketed tag, applies to BOTH themes):
+    [SOCIALS]   Twitch / X / Instagram links
+    [STATS]     numbers in the stats band (data-target / data-suffix)
+    [SCHEDULE]  the weekly schedule + timezone
+    [COPY]      hero / narrative text
+
+  Single self-contained file. Drop in your repo as index.html. No build step.
+  ===========================================================================
+-->
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cpath d='M60 40 C50 42 44 46 44 54 C44 66 48 78 56 86 C58 89 62 89 64 86 C72 78 76 66 76 54 C76 46 70 42 60 40 Z' fill='none' stroke='%2322e3d4' stroke-width='5'/%3E%3Cpath d='M53 43 C45 31 33 27 26 15' fill='none' stroke='%2322e3d4' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M67 43 C75 31 87 27 94 15' fill='none' stroke='%2322e3d4' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Big+Shoulders+Display:wght@500;700;800;900&family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+/* ===========================================================
+   GLOBAL BASE
+   =========================================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Space Grotesk',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:#08090d;color:#f2f5f8;line-height:1.5;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:hidden;transition:background .45s ease,color .45s ease;
+}
+body.theme-v2{
+  font-family:'Familjen Grotesk',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:#16100e;color:#f3e9da;padding-bottom:26px;
+}
+a{color:inherit;text-decoration:none}
+img,svg{display:block;max-width:100%}
+.wrap{width:100%;max-width:var(--wrap,1180px);margin-inline:auto;padding-inline:clamp(18px,5vw,44px)}
+
+/* shared reveal mechanics (timing comes from each theme's --ease) */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .76s var(--ease),transform .76s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.reveal[data-d="1"]{transition-delay:.07s}
+.reveal[data-d="2"]{transition-delay:.14s}
+.reveal[data-d="3"]{transition-delay:.21s}
+.reveal[data-d="4"]{transition-delay:.28s}
+.reveal[data-d="5"]{transition-delay:.35s}
+
+/* ===========================================================
+   THEME SWITCH BAR
+   =========================================================== */
+.switchbar{
+  position:fixed;top:0;left:0;right:0;height:50px;z-index:100;
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  background:rgba(6,7,10,.62);backdrop-filter:blur(12px) saturate(140%);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  transition:background .45s ease,border-color .45s ease;
+}
+body.theme-v2 .switchbar{background:rgba(12,8,7,.66);border-bottom-color:rgba(243,233,218,.1)}
+.sw-label{font-family:'Space Mono',monospace;font-size:.64rem;letter-spacing:.22em;text-transform:uppercase;color:#7c828f}
+body.theme-v2 .sw-label{font-family:'DM Mono',monospace;color:#8a7c70}
+
+.toggle{position:relative;display:flex;background:rgba(255,255,255,.07);border-radius:100px;padding:4px}
+.toggle .thumb{
+  position:absolute;top:4px;left:4px;bottom:4px;width:calc(50% - 4px);border-radius:100px;
+  background:#22e3d4;transition:transform .42s cubic-bezier(.16,1,.3,1),background .42s ease;
+}
+body.theme-v2 .toggle .thumb{transform:translateX(100%);background:#f5382b}
+.toggle button{
+  position:relative;z-index:1;border:0;background:transparent;cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+  color:#b6bcc9;padding:8px 18px;border-radius:100px;transition:color .3s ease;
+}
+.toggle button[data-theme="v1"][aria-pressed="true"]{color:#062a2b}
+body.theme-v2 .toggle button[data-theme="v2"][aria-pressed="true"]{color:#fff}
+
+.sw-hint{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:#6a7080;animation:hintpulse 2.6s ease-in-out infinite}
+body.theme-v2 .sw-hint{font-family:'DM Mono',monospace}
+.sw-hint.hid{opacity:0;transition:opacity .4s ease;animation:none}
+@keyframes hintpulse{50%{color:#aeb4c2}}
+
+.sw-progress{position:absolute;left:0;bottom:0;height:2px;width:100%;transform:scaleX(0);transform-origin:0 50%;background:linear-gradient(90deg,#22e3d4,#ffb02e)}
+body.theme-v2 .sw-progress{background:linear-gradient(90deg,#f5382b,#e7b24c)}
+
+@media (max-width:520px){.sw-label,.sw-hint{display:none}}
+
+/* ===========================================================
+   ============   THEME 1 : NEON  (#v1)   =====================
+   =========================================================== */
+#v1{
+  --void:#08090d;--coal:#0e1016;--slate:#161922;
+  --line:rgba(255,255,255,.08);--line-2:rgba(255,255,255,.14);
+  --cyan:#22e3d4;--amber:#ffb02e;
+  --bone:#f2f5f8;--ash:#9aa0b0;--ash-dim:#5c6273;
+  --display:'Anton',Impact,sans-serif;--sans:'Space Grotesk',system-ui,sans-serif;--mono:'Space Mono',ui-monospace,monospace;
+  --wrap:1180px;--ease:cubic-bezier(.16,1,.3,1);
+}
+#v1 ::selection{background:var(--cyan);color:var(--void)}
+#v1 :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:2px}
+
+#v1 .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);display:inline-flex;align-items:center;gap:.6em}
+#v1 .eyebrow::before{content:'//';color:var(--ash-dim)}
+
+#v1 .nav{
+  position:fixed;top:50px;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  padding:14px clamp(20px,5vw,40px);border-bottom:1px solid transparent;
+  transition:background .4s var(--ease),border-color .4s var(--ease),backdrop-filter .4s var(--ease);
+}
+#v1 .nav.scrolled{background:rgba(8,9,13,.72);backdrop-filter:blur(14px) saturate(140%);border-bottom-color:var(--line)}
+#v1 .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.01em}
+#v1 .brand .mark{width:34px;height:34px;flex:none}
+#v1 .brand b{font-size:1.02rem}
+#v1 .brand span{color:var(--ash);font-weight:400;font-family:var(--mono);font-size:.7rem;letter-spacing:.05em}
+#v1 .nav-links{display:none;gap:30px;align-items:center}
+#v1 .nav-links a{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ash);transition:color .25s}
+#v1 .nav-links a:hover{color:var(--bone)}
+#v1 .nav-cta{font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;padding:9px 16px;border:1px solid var(--cyan);color:var(--cyan);border-radius:100px;transition:background .25s,color .25s,box-shadow .25s;white-space:nowrap}
+#v1 .nav-cta:hover{background:var(--cyan);color:var(--void);box-shadow:0 0 26px -6px var(--cyan)}
+
+#v1 .status{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;padding:7px 14px;border:1px solid var(--line-2);border-radius:100px;background:rgba(255,176,46,.06);color:var(--bone)}
+#v1 .status .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 0 rgba(255,176,46,.55);animation:pulse 2.4s var(--ease) infinite}
+#v1 .status .was{color:var(--ash-dim);text-decoration:line-through;text-decoration-color:var(--ash-dim)}
+#v1 .status .arrow{color:var(--ash-dim)}
+#v1 .status .now{color:var(--amber)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,176,46,.5)}70%{box-shadow:0 0 0 12px rgba(255,176,46,0)}100%{box-shadow:0 0 0 0 rgba(255,176,46,0)}}
+
+#v1 .atmos{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+#v1 .glow{position:absolute;border-radius:50%;filter:blur(90px)}
+#v1 .glow.cy{width:46vw;height:46vw;background:var(--cyan);top:-12vw;left:-10vw;opacity:.22;animation:drift1 26s ease-in-out infinite}
+#v1 .glow.am{width:38vw;height:38vw;background:var(--amber);bottom:-14vw;right:-8vw;opacity:.16;animation:drift2 32s ease-in-out infinite}
+#v1 .grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,#000 0%,transparent 75%);-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,#000 0%,transparent 75%);opacity:.6}
+@keyframes drift1{50%{transform:translate(8vw,6vw) scale(1.1)}}
+@keyframes drift2{50%{transform:translate(-7vw,-5vw) scale(1.12)}}
+
+#v1 .hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:150px;padding-bottom:60px}
+#v1 .hero-goat{position:absolute;right:-8%;top:50%;transform:translateY(-50%);width:min(72vw,560px);opacity:.07;z-index:0;pointer-events:none}
+#v1 .hero-inner{position:relative;z-index:1;max-width:780px}
+#v1 .hero h1{font-family:var(--display);font-weight:400;line-height:.9;letter-spacing:.005em;text-transform:uppercase;font-size:clamp(3.6rem,16vw,11rem);margin:22px 0 8px}
+#v1 .hero h1 .l{display:block;overflow:hidden}
+#v1 .hero h1 .l i{display:block;font-style:normal;transform:translateY(110%);transition:transform 1s var(--ease)}
+#v1 .hero h1 .grad{background:linear-gradient(100deg,var(--cyan),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
+#v1 .hero p.lede{color:var(--ash);font-size:clamp(1rem,2.4vw,1.22rem);max-width:48ch;margin:18px 0 30px}
+#v1 .hero .ctas{display:flex;flex-wrap:wrap;gap:14px}
+#v1 .btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;padding:15px 26px;border-radius:100px;transition:transform .25s var(--ease),box-shadow .3s,background .25s,color .25s,border-color .25s}
+#v1 .btn:hover{transform:translateY(-2px)}
+#v1 .btn-primary{background:var(--cyan);color:var(--void);font-weight:700;box-shadow:0 14px 40px -16px var(--cyan)}
+#v1 .btn-primary:hover{box-shadow:0 18px 50px -14px var(--cyan)}
+#v1 .btn-ghost{border:1px solid var(--line-2);color:var(--bone)}
+#v1 .btn-ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+#v1 .btn svg{width:17px;height:17px}
+#v1 .scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--ash-dim);display:flex;flex-direction:column;align-items:center;gap:8px}
+#v1 .scrollcue .line{width:1px;height:34px;background:linear-gradient(var(--cyan),transparent);animation:cue 2s ease-in-out infinite}
+@keyframes cue{0%,100%{opacity:.3;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
+#v1 .marquee{position:relative;z-index:1;margin-top:46px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;padding:14px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+#v1 .marquee .track{display:inline-flex;animation:scroll 28s linear infinite;will-change:transform}
+#v1 .marquee:hover .track{animation-play-state:paused}
+#v1 .marquee span{font-family:var(--display);text-transform:uppercase;font-size:1.15rem;letter-spacing:.04em;color:var(--ash-dim);padding-inline:26px;display:inline-flex;align-items:center;gap:26px}
+#v1 .marquee span::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--cyan);opacity:.6}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+#v1 .section{padding-block:clamp(80px,12vw,150px);position:relative}
+#v1 .section-head{max-width:640px;margin-bottom:clamp(40px,6vw,64px)}
+#v1 .section-head h2{font-family:var(--sans);font-weight:700;letter-spacing:-.02em;line-height:1.04;font-size:clamp(2rem,6vw,3.4rem);margin-top:16px}
+#v1 .section-head .accent{color:var(--cyan)}
+#v1 .comeback .body{color:var(--ash);font-size:clamp(1rem,2.2vw,1.15rem);max-width:54ch}
+#v1 .comeback .body strong{color:var(--bone);font-weight:600}
+
+#v1 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+#v1 .stat{background:var(--coal);padding:clamp(24px,5vw,38px) clamp(20px,4vw,30px)}
+#v1 .stat .num{font-family:var(--mono);font-weight:700;font-size:clamp(2.2rem,8vw,3.6rem);line-height:1;color:var(--bone);letter-spacing:-.02em}
+#v1 .stat .num .suf{color:var(--amber)}
+#v1 .stat .lbl{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ash);margin-top:12px}
+
+#v1 .arsenal-grid{display:grid;grid-template-columns:1fr;gap:16px}
+#v1 .card{position:relative;background:var(--coal);border:1px solid var(--line);border-radius:18px;padding:clamp(24px,4vw,32px);overflow:hidden;transition:transform .35s var(--ease),border-color .35s,background .35s;transform-style:preserve-3d}
+#v1 .card::before{content:'';position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity .35s;background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(34,227,212,.12),transparent 60%)}
+#v1 .card:hover{border-color:var(--line-2);background:var(--slate)}
+#v1 .card:hover::before{opacity:1}
+#v1 .card .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--amber)}
+#v1 .card h3{font-size:clamp(1.4rem,4vw,1.9rem);font-weight:700;letter-spacing:-.02em;margin:14px 0 8px}
+#v1 .card p{color:var(--ash);font-size:.96rem;max-width:42ch}
+#v1 .card .idx{position:absolute;top:clamp(20px,4vw,28px);right:clamp(20px,4vw,28px);font-family:var(--mono);font-size:.7rem;color:var(--ash-dim);letter-spacing:.1em}
+
+#v1 .sched{display:grid;grid-template-columns:1fr;gap:10px}
+#v1 .slot{display:grid;grid-template-columns:60px 1fr auto;align-items:center;gap:14px;padding:16px 20px;background:var(--coal);border:1px solid var(--line);border-radius:14px;transition:border-color .3s,background .3s,transform .3s var(--ease)}
+#v1 .slot:hover{border-color:var(--line-2);background:var(--slate);transform:translateX(4px)}
+#v1 .slot.off{opacity:.45}
+#v1 .slot .day{font-family:var(--mono);font-weight:700;font-size:.82rem;letter-spacing:.1em;color:var(--cyan)}
+#v1 .slot.off .day{color:var(--ash-dim)}
+#v1 .slot .game{font-weight:600;font-size:1rem}
+#v1 .slot .game small{display:block;color:var(--ash);font-weight:400;font-size:.78rem;font-family:var(--mono);letter-spacing:.06em;margin-top:2px}
+#v1 .slot .time{font-family:var(--mono);font-size:.78rem;color:var(--ash);letter-spacing:.06em;white-space:nowrap}
+#v1 .sched-note{font-family:var(--mono);font-size:.72rem;color:var(--ash-dim);letter-spacing:.08em;margin-top:18px}
+
+#v1 .connect-card{position:relative;overflow:hidden;border-radius:24px;border:1px solid var(--line);background:linear-gradient(160deg,var(--coal),var(--void));padding:clamp(36px,7vw,72px) clamp(26px,5vw,56px);text-align:center}
+#v1 .connect-card .cgoat{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.05;pointer-events:none}
+#v1 .connect-card .cgoat svg{width:min(60vw,360px)}
+#v1 .connect-card .inner{position:relative;z-index:1}
+#v1 .connect-card h2{font-family:var(--display);text-transform:uppercase;font-weight:400;letter-spacing:.01em;line-height:.92;font-size:clamp(2.4rem,9vw,5rem)}
+#v1 .connect-card .grad{background:linear-gradient(100deg,var(--cyan),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
+#v1 .connect-card p{color:var(--ash);max-width:46ch;margin:18px auto 30px;font-size:clamp(1rem,2.2vw,1.12rem)}
+#v1 .socials{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+#v1 .social{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;padding:13px 22px;border-radius:100px;border:1px solid var(--line-2);transition:transform .25s var(--ease),border-color .25s,color .25s,background .25s}
+#v1 .social:hover{transform:translateY(-2px);border-color:var(--cyan);color:var(--cyan)}
+#v1 .social.primary{background:var(--cyan);color:var(--void);border-color:var(--cyan);font-weight:700}
+#v1 .social.primary:hover{color:var(--void);box-shadow:0 14px 40px -16px var(--cyan)}
+#v1 .social svg{width:18px;height:18px}
+
+#v1 .footer{border-top:1px solid var(--line);padding-block:46px;margin-top:40px}
+#v1 .footer-row{display:flex;flex-direction:column;gap:22px;align-items:flex-start}
+#v1 .footer .brand .mark{width:30px;height:30px}
+#v1 .footer small{font-family:var(--mono);font-size:.72rem;color:var(--ash-dim);letter-spacing:.06em;line-height:1.8}
+#v1 .footer a.inline{color:var(--ash);transition:color .25s}
+#v1 .footer a.inline:hover{color:var(--cyan)}
+
+#v1 .hero .anim{opacity:0;transform:translateY(20px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+#v1 .hero.loaded h1 .l i{transform:none}
+#v1 .hero.loaded .anim{opacity:1;transform:none}
+#v1 .hero.loaded .anim[data-d="1"]{transition-delay:.5s}
+#v1 .hero.loaded .anim[data-d="2"]{transition-delay:.62s}
+#v1 .hero.loaded .anim[data-d="3"]{transition-delay:.74s}
+#v1 .hero.loaded .anim[data-d="4"]{transition-delay:.86s}
+
+@media (min-width:720px){#v1 .stats-grid{grid-template-columns:repeat(4,1fr)}#v1 .arsenal-grid{grid-template-columns:repeat(2,1fr)}#v1 .footer-row{flex-direction:row;justify-content:space-between;align-items:center}}
+@media (min-width:900px){#v1 .nav-links{display:flex}#v1 .hero h1{letter-spacing:0}}
+@media (min-width:1040px){#v1 .arsenal-grid{grid-template-columns:repeat(3,1fr)}#v1 .arsenal-grid .card.wide{grid-column:span 2}}
+
+/* ===========================================================
+   ============   THEME 2 : BROADCAST  (#v2)   ================
+   =========================================================== */
+#v2{
+  --ink:#16100e;--ink-2:#1e1614;--ink-3:#271d19;
+  --paper:#f3e9da;--paper-2:#e6d8c2;
+  --line:rgba(243,233,218,.12);--line-2:rgba(243,233,218,.22);
+  --red:#f5382b;--gold:#e7b24c;--muted:#a8978a;--muted-dim:#6f6157;
+  --b1:#ece3d3;--b2:#d8b248;--b3:#58b3bf;--b4:#5aa566;--b5:#b25e98;--b6:#cf4030;--b7:#4a63ad;
+  --display:'Big Shoulders Display',Impact,sans-serif;--sans:'Familjen Grotesk',system-ui,sans-serif;--mono:'DM Mono',ui-monospace,monospace;
+  --wrap:1200px;--ease:cubic-bezier(.22,1,.36,1);--bar-h:26px;
+}
+#v2 ::selection{background:var(--red);color:var(--paper)}
+#v2 :focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+#v2 .bars{display:flex;height:8px;width:100%;border-radius:3px;overflow:hidden}
+#v2 .bars i{flex:1;display:block;transform:scaleY(0);transform-origin:bottom;transition:transform .5s var(--ease)}
+#v2 .bars.in i{transform:scaleY(1)}
+#v2 .bars i:nth-child(1){background:var(--b1);transition-delay:.02s}
+#v2 .bars i:nth-child(2){background:var(--b2);transition-delay:.07s}
+#v2 .bars i:nth-child(3){background:var(--b3);transition-delay:.12s}
+#v2 .bars i:nth-child(4){background:var(--b4);transition-delay:.17s}
+#v2 .bars i:nth-child(5){background:var(--b5);transition-delay:.22s}
+#v2 .bars i:nth-child(6){background:var(--b6);transition-delay:.27s}
+#v2 .bars i:nth-child(7){background:var(--b7);transition-delay:.32s}
+
+#v2 .crt{position:fixed;inset:0;z-index:80;pointer-events:none}
+#v2 .crt::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.16) 3px);opacity:.5;animation:flick 6s steps(60) infinite}
+#v2 .crt::after{content:'';position:absolute;inset:0;background:radial-gradient(120% 120% at 50% 50%,transparent 58%,rgba(0,0,0,.5) 100%)}
+@keyframes flick{0%,97%,100%{opacity:.5}98%{opacity:.34}99%{opacity:.6}}
+
+#v2 .statusbar{position:fixed;top:50px;left:0;right:0;z-index:70;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px clamp(14px,4vw,34px);background:rgba(22,16,14,.78);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+#v2 .sb-left{display:flex;align-items:center;gap:12px;min-width:0}
+#v2 .sb-badge{width:36px;height:36px;flex:none}
+#v2 .sb-name{display:flex;flex-direction:column;line-height:1.05;min-width:0}
+#v2 .sb-name b{font-family:var(--display);font-weight:800;font-size:1rem;letter-spacing:.02em;white-space:nowrap}
+#v2 .sb-name span{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+#v2 .sb-right{display:flex;align-items:center;gap:14px}
+#v2 .timecode{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;color:var(--gold);display:none}
+#v2 .tally{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;padding:6px 12px;border:1px solid var(--red);border-radius:4px;color:var(--paper);background:rgba(245,56,43,.1)}
+#v2 .tally .rec{width:9px;height:9px;border-radius:50%;background:var(--red);animation:blink 1.4s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+
+#v2 .hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:150px;padding-bottom:40px;overflow:hidden}
+#v2 .hero::before{content:'';position:absolute;width:90vw;height:90vw;max-width:900px;max-height:900px;top:-20%;left:50%;transform:translateX(-50%);background:radial-gradient(circle,rgba(245,56,43,.16),transparent 60%);pointer-events:none}
+#v2 .hero-inner{position:relative;z-index:2}
+#v2 .kicker{font-family:var(--mono);font-size:.74rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);display:inline-flex;align-items:center;gap:.7em}
+#v2 .kicker::before{content:'';width:26px;height:1px;background:var(--gold)}
+#v2 .hero h1{font-family:var(--display);font-weight:900;line-height:.84;text-transform:uppercase;font-size:clamp(4.2rem,21vw,15rem);letter-spacing:-.01em;margin:14px 0;color:var(--paper)}
+#v2 .hero h1 em{font-style:normal;color:var(--red);text-shadow:0 0 50px rgba(245,56,43,.4)}
+#v2 .hero-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:clamp(20px,5vw,48px);margin-top:6px}
+#v2 .channel{font-family:var(--display);font-weight:900;line-height:.8;color:var(--ink);background:var(--gold);padding:10px 16px 6px;border-radius:8px;font-size:clamp(2.6rem,9vw,4.6rem);letter-spacing:.02em;white-space:nowrap}
+#v2 .channel small{display:block;font-family:var(--mono);font-weight:500;font-size:.7rem;letter-spacing:.2em;color:rgba(22,16,14,.7)}
+#v2 .hero-copy{max-width:46ch}
+#v2 .hero-copy p{color:var(--muted);font-size:clamp(1rem,2.3vw,1.18rem)}
+#v2 .ctas{display:flex;flex-wrap:wrap;gap:13px;margin-top:30px}
+#v2 .btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;padding:15px 24px;border-radius:6px;transition:transform .25s var(--ease),background .25s,color .25s,border-color .25s,box-shadow .3s}
+#v2 .btn:hover{transform:translateY(-2px)}
+#v2 .btn-red{background:var(--red);color:var(--paper);font-weight:500;box-shadow:0 14px 38px -16px var(--red)}
+#v2 .btn-red:hover{box-shadow:0 18px 46px -14px var(--red)}
+#v2 .btn-line{border:1px solid var(--line-2);color:var(--paper)}
+#v2 .btn-line:hover{border-color:var(--gold);color:var(--gold)}
+#v2 .btn svg{width:16px;height:16px}
+#v2 .hero-bars{margin-top:42px;max-width:520px}
+
+#v2 .bc-section{padding-block:clamp(74px,11vw,140px);position:relative;scroll-margin-top:118px}
+#v2 .lt{display:inline-flex;flex-direction:column;align-items:flex-start;margin-bottom:clamp(30px,5vw,52px)}
+#v2 .lt-kick{font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;background:var(--red);color:var(--paper);padding:5px 11px;border-radius:4px 4px 0 0;clip-path:inset(0 100% 0 0);transition:clip-path .55s var(--ease) .05s}
+#v2 .lt-title{font-family:var(--display);font-weight:800;text-transform:uppercase;line-height:.96;font-size:clamp(2.1rem,6.4vw,3.8rem);letter-spacing:-.01em;background:var(--paper);color:var(--ink);padding:6px 14px 8px;border-radius:0 6px 6px 6px;clip-path:inset(0 100% 0 0);transition:clip-path .6s var(--ease) .14s}
+#v2 .lt.in .lt-kick,#v2 .lt.in .lt-title{clip-path:inset(0 0 0 0)}
+#v2 .lt-title .accent{color:var(--red)}
+#v2 .signal .body{color:var(--muted);font-size:clamp(1.05rem,2.3vw,1.22rem);max-width:56ch}
+#v2 .signal .body strong{color:var(--paper);font-weight:600}
+#v2 .signal .body .hl{color:var(--gold)}
+
+#v2 .ratings{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+#v2 .rating{border:1px solid var(--line);border-radius:10px;padding:clamp(22px,4vw,32px);background:linear-gradient(160deg,var(--ink-2),var(--ink));position:relative;overflow:hidden}
+#v2 .rating::after{content:'';position:absolute;left:0;top:0;width:4px;height:100%;background:var(--red)}
+#v2 .rating .num{font-family:var(--display);font-weight:900;font-size:clamp(2.6rem,9vw,4rem);line-height:.9;color:var(--paper)}
+#v2 .rating .num .suf{color:var(--gold)}
+#v2 .rating .lbl{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+
+#v2 .lineup{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+#v2 .show{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:clamp(14px,3vw,26px);padding:clamp(20px,4vw,30px) clamp(18px,4vw,32px);border-bottom:1px solid var(--line);background:var(--ink);position:relative;transition:background .3s var(--ease)}
+#v2 .show:last-child{border-bottom:none}
+#v2 .show::before{content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:var(--red);transition:width .3s var(--ease)}
+#v2 .show:hover{background:var(--ink-2)}
+#v2 .show:hover::before{width:4px}
+#v2 .show .ch{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;color:var(--gold);white-space:nowrap}
+#v2 .show .mid h3{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:clamp(1.5rem,5vw,2.3rem);line-height:1;letter-spacing:-.01em}
+#v2 .show .mid p{color:var(--muted);font-size:.95rem;margin-top:4px}
+#v2 .show .genre{font-family:var(--mono);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line-2);padding:5px 9px;border-radius:4px;white-space:nowrap}
+
+#v2 .guide{display:grid;grid-template-columns:1fr;gap:10px}
+#v2 .epg{display:grid;grid-template-columns:54px 1fr auto;align-items:center;gap:14px;padding:15px 18px;border:1px solid var(--line);border-radius:9px;background:var(--ink-2);transition:transform .3s var(--ease),border-color .3s,background .3s}
+#v2 .epg:hover{transform:translateX(4px);border-color:var(--line-2);background:var(--ink-3)}
+#v2 .epg.dark{opacity:.42}
+#v2 .epg .d{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:1.05rem;color:var(--gold)}
+#v2 .epg.dark .d{color:var(--muted-dim)}
+#v2 .epg .prog{font-weight:600;font-size:1.02rem}
+#v2 .epg .prog small{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;color:var(--muted);margin-top:2px}
+#v2 .epg .slot{font-family:var(--mono);font-size:.76rem;color:var(--paper-2);white-space:nowrap}
+#v2 .guide-note{font-family:var(--mono);font-size:.7rem;color:var(--muted-dim);letter-spacing:.06em;margin-top:16px}
+
+#v2 .tunein{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:radial-gradient(120% 130% at 50% 0%,var(--ink-3),var(--ink));padding:clamp(40px,8vw,82px) clamp(22px,5vw,56px);text-align:center}
+#v2 .tunein .tagbadge{position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(64vw,420px);opacity:.06}
+#v2 .tunein .inner{position:relative;z-index:1}
+#v2 .tunein h2{font-family:var(--display);font-weight:900;text-transform:uppercase;line-height:.86;font-size:clamp(2.6rem,10vw,5.6rem);letter-spacing:-.01em}
+#v2 .tunein h2 em{font-style:normal;color:var(--red)}
+#v2 .tunein p{color:var(--muted);max-width:46ch;margin:18px auto 32px;font-size:clamp(1rem,2.3vw,1.14rem)}
+#v2 .socials{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+#v2 .social{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.78rem;letter-spacing:.05em;padding:13px 22px;border-radius:7px;border:1px solid var(--line-2);transition:transform .25s var(--ease),border-color .25s,color .25s,background .25s,box-shadow .3s}
+#v2 .social:hover{transform:translateY(-2px);border-color:var(--gold);color:var(--gold)}
+#v2 .social.primary{background:var(--red);color:var(--paper);border-color:var(--red);font-weight:500}
+#v2 .social.primary:hover{color:var(--paper);box-shadow:0 14px 40px -16px var(--red)}
+#v2 .social svg{width:18px;height:18px}
+
+#v2 .signoff{border-top:1px solid var(--line);padding-block:clamp(40px,7vw,64px)}
+#v2 .signoff .so-bars{max-width:340px;margin-bottom:26px}
+#v2 .signoff h4{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:clamp(1.4rem,5vw,2rem);letter-spacing:.02em}
+#v2 .signoff .so-row{display:flex;flex-direction:column;gap:18px;margin-top:18px}
+#v2 .signoff small{font-family:var(--mono);font-size:.72rem;color:var(--muted-dim);letter-spacing:.05em;line-height:1.9}
+#v2 .signoff a.inl{color:var(--muted);transition:color .25s}
+#v2 .signoff a.inl:hover{color:var(--gold)}
+
+#v2 .ticker{position:fixed;left:0;right:0;bottom:0;height:var(--bar-h);z-index:75;background:var(--red);color:var(--paper);display:flex;align-items:center;overflow:hidden;white-space:nowrap;border-top:2px solid var(--ink)}
+#v2 .ticker .tk{display:inline-flex;animation:tick 26s linear infinite;will-change:transform;font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+#v2 .ticker .tk span{padding-inline:22px;display:inline-flex;align-items:center;gap:22px}
+#v2 .ticker .tk span::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--paper)}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+#v2 .hero .pop{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+#v2 .hero.loaded .pop{opacity:1;transform:none}
+#v2 .hero.loaded .pop[data-d="1"]{transition-delay:.15s}
+#v2 .hero.loaded .pop[data-d="2"]{transition-delay:.3s}
+#v2 .hero.loaded .pop[data-d="3"]{transition-delay:.45s}
+#v2 .hero.loaded .pop[data-d="4"]{transition-delay:.6s}
+#v2 .hero.loaded .pop[data-d="5"]{transition-delay:.75s}
+
+@media (min-width:560px){#v2 .timecode{display:inline}}
+@media (min-width:720px){#v2 .ratings{grid-template-columns:repeat(4,1fr)}}
+@media (min-width:900px){#v2 .hero h1{letter-spacing:-.02em}}
+@media (min-width:1000px){#v2 .signoff .so-row{flex-direction:row;justify-content:space-between;align-items:center}}
+
+/* ===========================================================
+   REDUCED MOTION
+   =========================================================== */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition-duration:.001ms !important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+  #v1 .hero .anim,#v2 .hero .pop{opacity:1;transform:none}
+  #v1 .hero h1 .l i{transform:none}
+  #v1 .marquee .track{animation:none}
+  #v2 .bars i{transform:scaleY(1)}
+  #v2 .lt-kick,#v2 .lt-title{clip-path:none}
+  #v2 .ticker .tk{animation:none}
+  #v2 .crt::before{animation:none;opacity:.4}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ shared SVG marks ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="goat" viewBox="0 0 120 120">
+    <path d="M60 40 C50 42 44 46 44 54 C44 66 48 78 56 86 C58 89 62 89 64 86 C72 78 76 66 76 54 C76 46 70 42 60 40 Z" fill="none" stroke="#22e3d4" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M53 43 C45 31 33 27 26 15" fill="none" stroke="#22e3d4" stroke-width="5" stroke-linecap="round"/>
+    <path d="M67 43 C75 31 87 27 94 15" fill="none" stroke="#22e3d4" stroke-width="5" stroke-linecap="round"/>
+    <path d="M45 52 C39 50 35 52 33 56" fill="none" stroke="#22e3d4" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M75 52 C81 50 85 52 87 56" fill="none" stroke="#22e3d4" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M50 60 L57 57" stroke="#ffb02e" stroke-width="5" stroke-linecap="round"/>
+    <path d="M70 60 L63 57" stroke="#ffb02e" stroke-width="5" stroke-linecap="round"/>
+    <path d="M60 90 L57 99 M60 90 L60 100 M60 90 L63 99" stroke="#22e3d4" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+  <defs><path id="ring" d="M 14,60 a 46,46 0 1,1 92,0 a 46,46 0 1,1 -92,0" /></defs>
+  <symbol id="badge" viewBox="0 0 120 120">
+    <circle cx="60" cy="60" r="58" fill="none" stroke="#f3e9da" stroke-width="1.4"/>
+    <circle cx="60" cy="60" r="50" fill="none" stroke="#f3e9da" stroke-width="1"/>
+    <text font-family="DM Mono, monospace" font-size="7.4" letter-spacing="2.4" fill="#f3e9da">
+      <textPath href="#ring" startOffset="0">CHANNEL 410 · DAKOTA410BERRY · BACK ON AIR · </textPath>
+    </text>
+    <g stroke-linecap="round">
+      <path d="M60 47 C53 48 49 51 49 57 C49 66 52 75 58 81 C59.5 83 60.5 83 62 81 C68 75 71 66 71 57 C71 51 67 48 60 47 Z" fill="none" stroke="#f3e9da" stroke-width="4"/>
+      <path d="M55 49 C49 41 41 38 36 31" fill="none" stroke="#f3e9da" stroke-width="4.4"/>
+      <path d="M65 49 C71 41 79 38 84 31" fill="none" stroke="#f3e9da" stroke-width="4.4"/>
+      <path d="M53 59 L58 56.5" stroke="#f5382b" stroke-width="4.6"/>
+      <path d="M67 59 L62 56.5" stroke="#f5382b" stroke-width="4.6"/>
+      <path d="M60 82 L58 89 M60 82 L60 90 M60 82 L62 89" stroke="#f3e9da" stroke-width="2.6"/>
+    </g>
+  </symbol>
+</svg>
+
+<!-- ============ THEME SWITCH BAR ============ -->
+<div class="switchbar">
+  <span class="sw-label">Theme</span>
+  <div class="toggle" role="group" aria-label="Switch website theme">
+    <span class="thumb" aria-hidden="true"></span>
+    <button type="button" data-theme="v1" aria-pressed="true">Neon</button>
+    <button type="button" data-theme="v2" aria-pressed="false">Broadcast</button>
+  </div>
+  <span class="sw-hint" id="swHint">tap to compare</span>
+  <div class="sw-progress" id="progress"></div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- ============================  THEME 1 : NEON  ======================== -->
+<!-- ===================================================================== -->
+<div class="ver" id="v1">
+  <div class="atmos" aria-hidden="true">
+    <div class="glow cy"></div><div class="glow am"></div><div class="grid"></div>
+  </div>
+
+  <nav class="nav">
+    <a class="brand" href="#v1-top" aria-label="dakota410berry home">
+      <span class="mark"><svg><use href="#goat"/></svg></span>
+      <b>dakota410berry</b><span>/ goat</span>
+    </a>
+    <div class="nav-links">
+      <a href="#comeback">Comeback</a><a href="#arsenal">Arsenal</a><a href="#schedule">Schedule</a><a href="#connect">Connect</a>
+    </div>
+    <!-- [SOCIALS] --><a class="nav-cta" href="https://twitch.tv/dakota410berry" target="_blank" rel="noopener">Follow on Twitch</a>
+  </nav>
+
+  <header class="hero" id="v1-top">
+    <div class="hero-goat" aria-hidden="true"><svg><use href="#goat"/></svg></div>
+    <div class="wrap hero-inner">
+      <!-- [COPY] --><span class="eyebrow anim" data-d="1">dakota410berry &middot; back on the grind</span>
+      <h1>
+        <span class="l"><i>The</i></span>
+        <span class="l"><i class="grad">GOAT</i></span>
+        <span class="l"><i>Returns</i></span>
+      </h1>
+      <div class="anim" data-d="2" style="margin:6px 0 4px">
+        <span class="status" role="status"><span class="dot"></span><span class="was">Offline</span><span class="arrow">&rarr;</span><span class="now">Returning soon</span></span>
+      </div>
+      <p class="lede anim" data-d="3">Years off the grid. Same lobbies, sharper aim, one goat. The comeback starts now, so hit follow and you won't miss the first stream back.</p>
+      <div class="ctas anim" data-d="4">
+        <!-- [SOCIALS] -->
+        <a class="btn btn-primary" href="https://twitch.tv/dakota410berry" target="_blank" rel="noopener">Follow on Twitch
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#arsenal">See the lineup</a>
+      </div>
+    </div>
+    <div class="marquee" aria-hidden="true">
+      <div class="track">
+        <span>Call of Duty</span><span>Warzone</span><span>Apex Legends</span><span>Minecraft</span><span>Fortnite</span><span>Ranked</span><span>Variety</span>
+        <span>Call of Duty</span><span>Warzone</span><span>Apex Legends</span><span>Minecraft</span><span>Fortnite</span><span>Ranked</span><span>Variety</span>
+      </div>
+    </div>
+    <div class="scrollcue" aria-hidden="true">Scroll<div class="line"></div></div>
+  </header>
+
+  <main>
+    <section class="section comeback" id="comeback" style="scroll-margin-top:120px">
+      <div class="wrap">
+        <div class="section-head reveal"><span class="eyebrow">the comeback</span><h2>The light's coming<br><span class="accent">back on.</span></h2></div>
+        <!-- [COPY] -->
+        <p class="body reveal" data-d="1">3,000+ of you stuck around through the quiet years. That's not an audience. <strong>That's a roster.</strong> The grind picks up where it left off: late-night lobbies, ranked runs, and the kind of plays that get you clipped. No retirement tour, no farewell stream. <strong>A comeback.</strong> Lights on, mics hot, goat back in the chair.</p>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:0">
+      <div class="wrap">
+        <!-- [STATS] -->
+        <div class="stats-grid reveal">
+          <div class="stat"><div class="num" data-target="3100">0</div><div class="lbl">Followers</div></div>
+          <div class="stat"><div class="num" data-target="8" data-suffix="+">0</div><div class="lbl">Years deep</div></div>
+          <div class="stat"><div class="num" data-target="5">0</div><div class="lbl">Games in rotation</div></div>
+          <div class="stat"><div class="num" data-target="250" data-suffix="+">0</div><div class="lbl">Career clips</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="arsenal" style="scroll-margin-top:120px;padding-top:clamp(40px,7vw,90px)">
+      <div class="wrap">
+        <div class="section-head reveal"><span class="eyebrow">the arsenal</span><h2>What's <span class="accent">in rotation</span></h2></div>
+        <div class="arsenal-grid">
+          <article class="card reveal tilt" data-d="1"><span class="idx">01</span><span class="tag">FPS</span><h3>Call of Duty</h3><p>Warzone drops and multiplayer chaos. Drop hot, talk trash, win loud.</p></article>
+          <article class="card reveal tilt" data-d="2"><span class="idx">02</span><span class="tag">Battle Royale</span><h3>Apex Legends</h3><p>The ranked grind with zero chill. Movement, clutches, and the occasional meltdown.</p></article>
+          <article class="card reveal tilt" data-d="3"><span class="idx">03</span><span class="tag">Sandbox</span><h3>Minecraft</h3><p>Chill builds and chaotic survival. The cooldown stream after a sweaty night.</p></article>
+          <article class="card reveal tilt" data-d="4"><span class="idx">04</span><span class="tag">Battle Royale</span><h3>Fortnite</h3><p>Box fights and old-school clutches. Back where the highlight reel started.</p></article>
+          <article class="card reveal tilt wide" data-d="5"><span class="idx">05</span><span class="tag">Variety</span><h3>&amp; whatever's next</h3><p>New drops, community picks, and chat-fueled detours. The schedule bends to the lobby.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="schedule" style="scroll-margin-top:120px;padding-top:clamp(40px,7vw,90px)">
+      <div class="wrap">
+        <div class="section-head reveal"><span class="eyebrow">the schedule</span><h2>When the <span class="accent">lights come on</span></h2></div>
+        <!-- [SCHEDULE] -->
+        <div class="sched">
+          <div class="slot off reveal" data-d="1"><span class="day">Mon</span><span class="game">Off</span><span class="time">-</span></div>
+          <div class="slot reveal" data-d="1"><span class="day">Tue</span><span class="game">Warzone<small>ranked grind</small></span><span class="time">8:00 PM</span></div>
+          <div class="slot off reveal" data-d="2"><span class="day">Wed</span><span class="game">Off</span><span class="time">-</span></div>
+          <div class="slot reveal" data-d="2"><span class="day">Thu</span><span class="game">Apex Legends<small>ranked grind</small></span><span class="time">8:00 PM</span></div>
+          <div class="slot reveal" data-d="3"><span class="day">Fri</span><span class="game">Variety<small>community picks</small></span><span class="time">8:00 PM</span></div>
+          <div class="slot reveal" data-d="3"><span class="day">Sat</span><span class="game">Community Night<small>subs &amp; viewers</small></span><span class="time">7:00 PM</span></div>
+          <div class="slot off reveal" data-d="4"><span class="day">Sun</span><span class="game">Off</span><span class="time">-</span></div>
+        </div>
+        <p class="sched-note reveal" data-d="4">// All times EST. Schedule firms up at launch. Follow on Twitch for go-live pings.</p>
+      </div>
+    </section>
+
+    <section class="section" id="connect" style="scroll-margin-top:120px">
+      <div class="wrap">
+        <div class="connect-card reveal">
+          <div class="cgoat" aria-hidden="true"><svg><use href="#goat"/></svg></div>
+          <div class="inner">
+            <span class="eyebrow" style="justify-content:center">don't miss the return</span>
+            <h2 style="margin-top:14px">Be there<br>day <span class="grad">one.</span></h2>
+            <p>One follow and you're on the list for the first stream back. Bring the lobby.</p>
+            <div class="socials">
+              <!-- [SOCIALS] -->
+              <a class="social primary" href="https://twitch.tv/dakota410berry" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3 3 6v13h4v2h3l2-2h3l5-5V3H4Zm15 9-2 2h-3l-2 2v-2H8V5h11v7ZM15 7h-2v4h2V7Zm-5 0H8v4h2V7Z"/></svg>Twitch</a>
+              <a class="social" href="https://x.com/dakota410berry" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7 8 8.3 12h-6.5l-5-7.3L6 22H2.9l7.5-8.6L2 2h6.6l4.6 6.7L18.9 2Zm-1.1 18h1.8L7.3 4H5.4l12.4 16Z"/></svg>@dakota410berry</a>
+              <a class="social" href="https://instagram.com/dakota410berry" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>@dakota410berry</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-row">
+      <a class="brand" href="#v1-top"><span class="mark"><svg><use href="#goat"/></svg></span><b>dakota410berry</b></a>
+      <small>The GOAT returns. Comeback page.<br>&copy; <span class="js-year"></span> dakota410berry. Built for the grind. &middot;
+        <a class="inline" href="https://twitch.tv/dakota410berry" target="_blank" rel="noopener">Twitch</a> /
+        <a class="inline" href="https://x.com/dakota410berry" target="_blank" rel="noopener">X</a> /
+        <a class="inline" href="https://instagram.com/dakota410berry" target="_blank" rel="noopener">Instagram</a>
+      </small>
+    </div>
+  </footer>
+</div>
+
+<!-- ===================================================================== -->
+<!-- =========================  THEME 2 : BROADCAST  ===================== -->
+<!-- ===================================================================== -->
+<div class="ver" id="v2" style="display:none">
+  <div class="crt" aria-hidden="true"></div>
+
+  <header class="statusbar">
+    <a class="sb-left" href="#v2-top" aria-label="Channel 410 home">
+      <span class="sb-badge"><svg><use href="#badge"/></svg></span>
+      <span class="sb-name"><b>dakota410berry</b><span>Channel 410</span></span>
+    </a>
+    <div class="sb-right">
+      <span class="timecode" id="v2-tc">00:00:00:00</span>
+      <span class="tally"><span class="rec"></span>Off Air</span>
+    </div>
+  </header>
+
+  <section class="hero" id="v2-top">
+    <div class="wrap hero-inner">
+      <!-- [COPY] -->
+      <span class="kicker pop" data-d="1">We now return you to</span>
+      <h1 class="pop" data-d="2">Back <em>On Air</em></h1>
+      <div class="hero-row">
+        <div class="channel pop" data-d="3">410<small>Channel</small></div>
+        <div class="hero-copy pop" data-d="4">
+          <p>dakota410berry is warming up the signal. After a few years of dead air, the channel comes back. Tune in so you catch the first broadcast back.</p>
+          <div class="ctas">
+            <!-- [SOCIALS] -->
+            <a class="btn btn-red" href="https://twitch.tv/dakota410berry" target="_blank" rel="noopener">Tune in on Twitch
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a class="btn btn-line" href="#guide">Open the guide</a>
+          </div>
+        </div>
+      </div>
+      <div class="hero-bars pop" data-d="5"><div class="bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    </div>
+  </section>
+
+  <main>
+    <section class="bc-section signal" id="signal">
+      <div class="wrap">
+        <div class="lt reveal"><span class="lt-kick">Station ID</span><span class="lt-title">The signal <span class="accent">returns</span></span></div>
+        <!-- [COPY] -->
+        <p class="body reveal" data-d="1">For a few years, channel 410 ran nothing but static. <span class="hl">3,000 of you kept the set on anyway.</span> That kind of loyalty does not get a quiet reboot, it gets a premiere. <strong>Same host, same goat, sharper signal.</strong> We are back on air, and this time the channel is not going dark again.</p>
+      </div>
+    </section>
+
+    <section class="bc-section" style="padding-top:0">
+      <div class="wrap">
+        <div class="lt reveal"><span class="lt-kick">By the numbers</span><span class="lt-title">The ratings</span></div>
+        <!-- [STATS] -->
+        <div class="ratings">
+          <div class="rating reveal" data-d="1"><div class="num" data-target="3100">0</div><div class="lbl">Loyal viewers</div></div>
+          <div class="rating reveal" data-d="2"><div class="num" data-target="8" data-suffix="+">0</div><div class="lbl">Years on air</div></div>
+          <div class="rating reveal" data-d="3"><div class="num" data-target="5">0</div><div class="lbl">Channels live</div></div>
+          <div class="rating reveal" data-d="4"><div class="num" data-target="250" data-suffix="+">0</div><div class="lbl">Clips in the vault</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bc-section" id="lineup">
+      <div class="wrap">
+        <div class="lt reveal"><span class="lt-kick">Now playing</span><span class="lt-title">The <span class="accent">lineup</span></span></div>
+        <div class="lineup">
+          <article class="show reveal" data-d="1"><span class="ch">CH 401</span><div class="mid"><h3>Call of Duty</h3><p>Prime-time firefights and Warzone drops.</p></div><span class="genre">FPS</span></article>
+          <article class="show reveal" data-d="1"><span class="ch">CH 402</span><div class="mid"><h3>Apex Legends</h3><p>The ranked broadcast, zero chill.</p></div><span class="genre">Battle Royale</span></article>
+          <article class="show reveal" data-d="2"><span class="ch">CH 403</span><div class="mid"><h3>Minecraft</h3><p>Late-night build sessions and chaotic survival.</p></div><span class="genre">Sandbox</span></article>
+          <article class="show reveal" data-d="2"><span class="ch">CH 404</span><div class="mid"><h3>Fortnite</h3><p>Where the highlight reel started.</p></div><span class="genre">Battle Royale</span></article>
+          <article class="show reveal" data-d="3"><span class="ch">CH 405</span><div class="mid"><h3>Variety</h3><p>Whatever the lobby votes for that night.</p></div><span class="genre">Variety</span></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="bc-section" id="guide">
+      <div class="wrap">
+        <div class="lt reveal"><span class="lt-kick">This week</span><span class="lt-title">The <span class="accent">guide</span></span></div>
+        <!-- [SCHEDULE] -->
+        <div class="guide">
+          <div class="epg dark reveal" data-d="1"><span class="d">Mon</span><span class="prog">Off Air</span><span class="slot">-</span></div>
+          <div class="epg reveal" data-d="1"><span class="d">Tue</span><span class="prog">Call of Duty<small>prime-time firefights</small></span><span class="slot">8:00 PM ET</span></div>
+          <div class="epg dark reveal" data-d="2"><span class="d">Wed</span><span class="prog">Off Air</span><span class="slot">-</span></div>
+          <div class="epg reveal" data-d="2"><span class="d">Thu</span><span class="prog">Apex Legends<small>the ranked broadcast</small></span><span class="slot">8:00 PM ET</span></div>
+          <div class="epg reveal" data-d="3"><span class="d">Fri</span><span class="prog">Variety Night<small>lobby's choice</small></span><span class="slot">8:00 PM ET</span></div>
+          <div class="epg reveal" data-d="3"><span class="d">Sat</span><span class="prog">Community Hour<small>subs and viewers</small></span><span class="slot">7:00 PM ET</span></div>
+          <div class="epg dark reveal" data-d="4"><span class="d">Sun</span><span class="prog">Off Air</span><span class="slot">-</span></div>
+        </div>
+        <p class="guide-note reveal" data-d="4">Programming is tentative until launch. Follow on Twitch for go-live alerts.</p>
+      </div>
+    </section>
+
+    <section class="bc-section" id="tunein">
+      <div class="wrap">
+        <div class="tunein reveal">
+          <div class="tagbadge" aria-hidden="true"><svg><use href="#badge"/></svg></div>
+          <div class="inner">
+            <span class="kicker" style="justify-content:center">Premiere incoming</span>
+            <h2 style="margin-top:14px">Don't touch<br>that <em>dial.</em></h2>
+            <p>One follow and you are set for the first broadcast back. Bring the lobby.</p>
+            <div class="socials">
+              <!-- [SOCIALS] -->
+              <a class="social primary" href="https://twitch.tv/dakota410berry" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3 3 6v13h4v2h3l2-2h3l5-5V3H4Zm15 9-2 2h-3l-2 2v-2H8V5h11v7ZM15 7h-2v4h2V7Zm-5 0H8v4h2V7Z"/></svg>Twitch</a>
+              <a class="social" href="https://x.com/dakota410berry" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7 8 8.3 12h-6.5l-5-7.3L6 22H2.9l7.5-8.6L2 2h6.6l4.6 6.7L18.9 2Zm-1.1 18h1.8L7.3 4H5.4l12.4 16Z"/></svg>@dakota410berry</a>
+              <a class="social" href="https://instagram.com/dakota410berry" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>@dakota410berry</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="signoff">
+    <div class="wrap">
+      <div class="so-bars"><div class="bars reveal"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <h4>End of broadcast</h4>
+      <div class="so-row">
+        <small>This has been dakota410berry. Channel 410. Stay tuned.</small>
+        <small>&copy; <span class="js-year"></span> dakota410berry &middot;
+          <a class="inl" href="https://twitch.tv/dakota410berry" target="_blank" rel="noopener">Twitch</a> /
+          <a class="inl" href="https://x.com/dakota410berry" target="_blank" rel="noopener">X</a> /
+          <a class="inl" href="https://instagram.com/dakota410berry" target="_blank" rel="noopener">Instagram</a>
+        </small>
+      </div>
+    </div>
+  </footer>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="tk">
+      <span>Signal returning</span><span>Channel 410</span><span>dakota410berry</span><span>Follow to tune in</span><span>Back on air soon</span>
+      <span>Signal returning</span><span>Channel 410</span><span>dakota410berry</span><span>Follow to tune in</span><span>Back on air soon</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var body = document.body;
+  var v1 = document.getElementById('v1'), v2 = document.getElementById('v2');
+  var toggles = document.querySelectorAll('.switchbar [data-theme]');
+
+  /* ---- reveal observer (covers both themes; hidden elements fire when shown) ---- */
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(x){ if(x.isIntersecting){ x.target.classList.add('in'); io.unobserve(x.target);} });
+  },{threshold:0.16, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal, .lt, .bars').forEach(function(el){ io.observe(el); });
+
+  /* ---- counters ---- */
+  function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
+  function count(el){
+    if(el.dataset.done) return; el.dataset.done = '1';
+    var t = parseFloat(el.getAttribute('data-target'))||0, sfx = el.getAttribute('data-suffix')||'';
+    if(reduce){ el.innerHTML = fmt(t)+(sfx?'<span class="suf">'+sfx+'</span>':''); return; }
+    var dur=1500, s=performance.now();
+    (function tick(now){
+      var p=Math.min((now-s)/dur,1), e=1-Math.pow(1-p,3);
+      el.innerHTML = fmt(t*e)+(sfx?'<span class="suf">'+sfx+'</span>':'');
+      if(p<1) requestAnimationFrame(tick);
+    })(s);
+  }
+  var cio = new IntersectionObserver(function(es){
+    es.forEach(function(x){ if(x.isIntersecting){ count(x.target); cio.unobserve(x.target);} });
+  },{threshold:0.5});
+  document.querySelectorAll('.num[data-target]').forEach(function(el){ cio.observe(el); });
+
+  /* ---- scroll progress (shared bar) + v1 nav state ---- */
+  var bar = document.getElementById('progress');
+  var v1nav = document.querySelector('#v1 .nav');
+  var ticking=false;
+  function onScroll(){
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight, st=h.scrollTop;
+    if(bar) bar.style.transform='scaleX('+(max>0?st/max:0)+')';
+    if(v1nav) v1nav.classList.toggle('scrolled', st>24);
+    ticking=false;
+  }
+  window.addEventListener('scroll', function(){ if(!ticking){ requestAnimationFrame(onScroll); ticking=true; } }, {passive:true});
+
+  /* ---- card tilt + spotlight (v1, pointer devices) ---- */
+  if(!reduce && window.matchMedia('(hover:hover) and (pointer:fine)').matches){
+    document.querySelectorAll('#v1 .card.tilt').forEach(function(card){
+      card.addEventListener('pointermove', function(ev){
+        var r=card.getBoundingClientRect(), x=ev.clientX-r.left, y=ev.clientY-r.top;
+        card.style.setProperty('--mx', x+'px'); card.style.setProperty('--my', y+'px');
+        card.style.transform='perspective(900px) rotateX('+(((y/r.height)-.5)*-5)+'deg) rotateY('+(((x/r.width)-.5)*5)+'deg) translateY(-4px)';
+      });
+      card.addEventListener('pointerleave', function(){ card.style.transform=''; });
+    });
+  }
+
+  /* ---- v2 live timecode clock (runs always; cheap) ---- */
+  var tc=document.getElementById('v2-tc');
+  function pad(n){ return String(n).padStart(2,'0'); }
+  (function clock(){
+    if(tc){ var d=new Date(); tc.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())+':'+pad(Math.floor((d.getMilliseconds()/1000)*30)); }
+    requestAnimationFrame(clock);
+  })();
+
+  /* ---- theme switching ---- */
+  function playHero(ver){
+    var hero=ver.querySelector('.hero'); if(!hero) return;
+    hero.classList.remove('loaded'); void hero.offsetWidth;
+    requestAnimationFrame(function(){ setTimeout(function(){ hero.classList.add('loaded'); }, 20); });
+  }
+  function revealInView(ver){
+    ver.querySelectorAll('.reveal, .lt, .bars').forEach(function(el){
+      var r=el.getBoundingClientRect();
+      if(r.top < window.innerHeight*0.94 && r.bottom>0){ el.classList.add('in'); io.unobserve(el); }
+    });
+    ver.querySelectorAll('.num[data-target]').forEach(function(el){
+      var r=el.getBoundingClientRect();
+      if(r.top < window.innerHeight*0.6 && r.bottom>0){ count(el); cio.unobserve(el); }
+    });
+  }
+  function setTheme(t, initial){
+    var active = (t==='v2')? v2 : v1, other = (t==='v2')? v1 : v2;
+    other.style.display='none'; other.setAttribute('aria-hidden','true');
+    active.style.display=''; active.removeAttribute('aria-hidden');
+    body.classList.toggle('theme-v2', t==='v2');
+    toggles.forEach(function(b){ var on=b.getAttribute('data-theme')===t; b.setAttribute('aria-pressed', on?'true':'false'); });
+    if(!initial) window.scrollTo(0,0);
+    requestAnimationFrame(function(){
+      playHero(active); revealInView(active); onScroll();
+      try{ localStorage.setItem('dk_theme', t); }catch(e){}
+    });
+  }
+
+  toggles.forEach(function(b){
+    b.addEventListener('click', function(){
+      setTheme(b.getAttribute('data-theme'));
+      var hint=document.getElementById('swHint'); if(hint) hint.classList.add('hid');
+    });
+  });
+
+  /* ---- pick initial theme: ?theme= param > stored > default v1 ---- */
+  var initT='v1';
+  try{
+    var q=new URLSearchParams(location.search).get('theme');
+    if(q==='v1'||q==='v2') initT=q;
+    else { var s=localStorage.getItem('dk_theme'); if(s==='v1'||s==='v2') initT=s; }
+  }catch(e){}
+
+  document.querySelectorAll('.js-year').forEach(function(el){ el.textContent=new Date().getFullYear(); });
+
+  setTheme(initT, true);
+  window.addEventListener('load', function(){ playHero(initT==='v2'?v2:v1); });
+})();
+</script>
+</body>
+</html>
