@@ -1,0 +1,222 @@
+:root {
+    --bg-dark: #0a0a0f;
+    --text-light: #f4f4f9;
+    --glass-bg: rgba(20, 20, 25, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    
+    /* Official House Colors */
+    --gryffindor-main: #740001;
+    --gryffindor-glow: #d3a625;
+    --slytherin-main: #1a472a;
+    --slytherin-glow: #5d5d5d;
+    --ravenclaw-main: #0e1a40;
+    --ravenclaw-glow: #946b2d;
+    --hufflepuff-main: #eeb939;
+    --hufflepuff-glow: #000000;
+}
+
+body {
+    margin: 0;
+    font-family: 'Lora', serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Ambient animated background */
+.animated-bg {
+    position: fixed;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(40, 40, 60, 0.4), transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(116, 0, 1, 0.15), transparent 40%),
+                radial-gradient(circle at 20% 80%, rgba(26, 71, 42, 0.15), transparent 40%);
+    animation: drift 30s infinite linear;
+    z-index: -1;
+}
+
+@keyframes drift {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header h1 {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 3rem;
+    letter-spacing: 4px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    margin-bottom: 40px;
+}
+
+.houses-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+@media (min-width: 600px) { .houses-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1024px) { .houses-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.house-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 25px 20px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.house-card:hover {
+    transform: translateY(-5px);
+}
+
+.house-card h2 {
+    font-family: 'Cinzel', serif;
+    margin: 0 0 5px 0;
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+}
+
+/* House Themes */
+.gryffindor { border-top: 4px solid var(--gryffindor-main); }
+.gryffindor:hover { box-shadow: 0 10px 40px rgba(116, 0, 1, 0.4); }
+.gryffindor h2 { color: var(--gryffindor-glow); }
+
+.slytherin { border-top: 4px solid var(--slytherin-main); }
+.slytherin:hover { box-shadow: 0 10px 40px rgba(26, 71, 42, 0.4); }
+.slytherin h2 { color: #a3a3a3; } /* Silver */
+
+.ravenclaw { border-top: 4px solid var(--ravenclaw-main); }
+.ravenclaw:hover { box-shadow: 0 10px 40px rgba(14, 26, 64, 0.6); }
+.ravenclaw h2 { color: var(--ravenclaw-glow); }
+
+.hufflepuff { border-top: 4px solid var(--hufflepuff-main); }
+.hufflepuff:hover { box-shadow: 0 10px 40px rgba(238, 185, 57, 0.2); }
+.hufflepuff h2 { color: var(--hufflepuff-main); }
+
+/* Members Input Style */
+.members-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed rgba(255,255,255,0.3);
+    color: #aaa;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    text-align: center;
+    width: 80%;
+    margin: 0 auto 15px auto;
+    padding: 5px;
+    font-size: 0.95rem;
+    transition: color 0.3s, border-color 0.3s;
+}
+
+.members-input:focus {
+    outline: none;
+    color: white;
+    border-bottom: 1px solid white;
+}
+
+.score {
+    font-family: 'Cinzel', serif;
+    font-size: 4.5rem;
+    font-weight: bold;
+    margin: 15px 0;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+/* Score Pop Animation */
+@keyframes scorePop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); text-shadow: 0 0 20px currentColor; }
+    100% { transform: scale(1); }
+}
+.animate-pop { animation: scorePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+.reason-input {
+    width: 90%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    font-family: 'Lora', serif;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+.reason-input:focus { outline: none; border-color: rgba(255,255,255,0.6); }
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+}
+
+button {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.ledger-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 40px;
+}
+
+.ledger-section h2 {
+    font-family: 'Cinzel', serif;
+    margin-top: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 15px;
+}
+
+#ledger-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#ledger-list li {
+    padding: 15px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

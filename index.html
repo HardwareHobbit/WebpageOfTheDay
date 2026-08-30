@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Great Hall Point Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script type="module" src="app.js" defer></script>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <div class="container">
+        <header>
+            <h1>House Points</h1>
+        </header>
+
+        <main class="houses-grid">
+            <div class="house-card gryffindor">
+                <h2>Gryffindor</h2>
+                <input type="text" id="members-gryffindor" class="members-input" placeholder="Wizards...">
+                <div class="score" id="score-gryffindor">0</div>
+                <input type="text" id="reason-gryffindor" class="reason-input" placeholder="Reason for points...">
+                <div class="button-group">
+                    <button onclick="awardPoints('Gryffindor', 5)">+5</button>
+                    <button onclick="awardPoints('Gryffindor', 10)">+10</button>
+                    <button onclick="awardPoints('Gryffindor', 25)">+25</button>
+                </div>
+            </div>
+
+            <div class="house-card slytherin">
+                <h2>Slytherin</h2>
+                <input type="text" id="members-slytherin" class="members-input" placeholder="Wizards...">
+                <div class="score" id="score-slytherin">0</div>
+                <input type="text" id="reason-slytherin" class="reason-input" placeholder="Reason for points...">
+                <div class="button-group">
+                    <button onclick="awardPoints('Slytherin', 5)">+5</button>
+                    <button onclick="awardPoints('Slytherin', 10)">+10</button>
+                    <button onclick="awardPoints('Slytherin', 25)">+25</button>
+                </div>
+            </div>
+
+            <div class="house-card ravenclaw">
+                <h2>Ravenclaw</h2>
+                <input type="text" id="members-ravenclaw" class="members-input" placeholder="Wizards...">
+                <div class="score" id="score-ravenclaw">0</div>
+                <input type="text" id="reason-ravenclaw" class="reason-input" placeholder="Reason for points...">
+                <div class="button-group">
+                    <button onclick="awardPoints('Ravenclaw', 5)">+5</button>
+                    <button onclick="awardPoints('Ravenclaw', 10)">+10</button>
+                    <button onclick="awardPoints('Ravenclaw', 25)">+25</button>
+                </div>
+            </div>
+
+            <div class="house-card hufflepuff">
+                <h2>Hufflepuff</h2>
+                <input type="text" id="members-hufflepuff" class="members-input" placeholder="Wizards...">
+                <div class="score" id="score-hufflepuff">0</div>
+                <input type="text" id="reason-hufflepuff" class="reason-input" placeholder="Reason for points...">
+                <div class="button-group">
+                    <button onclick="awardPoints('Hufflepuff', 5)">+5</button>
+                    <button onclick="awardPoints('Hufflepuff', 10)">+10</button>
+                    <button onclick="awardPoints('Hufflepuff', 25)">+25</button>
+                </div>
+            </div>
+        </main>
+
+        <section class="ledger-section">
+            <h2>The Ledger</h2>
+            <ul id="ledger-list">
+                </ul>
+        </section>
+    </div>
+</body>
+</html>
